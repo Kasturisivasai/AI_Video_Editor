@@ -1,7 +1,9 @@
 import os
+import re
 import tempfile
+import pandas as pd
 import streamlit as st
-from pipeline import DEFAULT_GEMINI_KEY, DEFAULT_PEXELS_KEY
+from pipeline import run_pipeline, write_subtitles_srt, burn_subtitles_ffmpeg, DEFAULT_GEMINI_KEY, DEFAULT_PEXELS_KEY
 
 # Configure Streamlit Page
 st.set_page_config(
@@ -126,10 +128,6 @@ uploaded_file = st.file_uploader(
     type=["mp4", "mov", "m4v"],
     help="Upload vertical (9:16) or standard talking-head video."
 )
-
-import re
-import pandas as pd
-from pipeline import run_pipeline, write_subtitles_srt, burn_subtitles_ffmpeg, DEFAULT_GEMINI_KEY, DEFAULT_PEXELS_KEY
 
 if uploaded_file is not None:
     temp_dir = tempfile.mkdtemp()
