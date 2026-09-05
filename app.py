@@ -1,7 +1,7 @@
 import os
 import tempfile
 import streamlit as st
-from pipeline import run_pipeline, DEFAULT_GEMINI_KEY, DEFAULT_PEXELS_KEY
+from pipeline import DEFAULT_GEMINI_KEY, DEFAULT_PEXELS_KEY
 
 # Configure Streamlit Page
 st.set_page_config(
@@ -127,8 +127,11 @@ uploaded_file = st.file_uploader(
     help="Upload vertical (9:16) or standard talking-head video."
 )
 
+import re
+import pandas as pd
+from pipeline import run_pipeline, write_subtitles_srt, burn_subtitles_ffmpeg, DEFAULT_GEMINI_KEY, DEFAULT_PEXELS_KEY
+
 if uploaded_file is not None:
-    # Save uploaded video to temp file
     temp_dir = tempfile.mkdtemp()
     raw_video_path = os.path.join(temp_dir, "raw_input.mp4")
     output_video_path = os.path.join(temp_dir, "final_edited_video.mp4")
@@ -147,7 +150,14 @@ if uploaded_file is not None:
         
         # Check if already processed in this session
         if "processed_video" not in st.session_state or st.session_state.get("current_file") != uploaded_file.name:
-            st.info("Click the button below to start the AI video editing pipeline.")
+            st.info("Set any specific proper nouns or vocabulary hints below, then click to generate.")
+            
+            vocab_hints = st.text_input(
+                "📝 Name / Vocabulary Hints (Optional)",
+                placeholder="e.g. Dr. Hymavathi, Hyma Prasad, KIMS Hospitals",
+                help="Enter comma-separated proper nouns or medical/technical terms to ensure exact spelling in subtitles."
+            )
+            
             start_btn = st.button("✨ Auto-Edit Video with AI")
             
             if start_btn:
@@ -160,16 +170,19 @@ if uploaded_file is not None:
                 
                 try:
                     with st.spinner("AI Agents at work..."):
-                        final_path, plan = run_pipeline(
+                        final_path, plan, transcript_data = run_pipeline(
                             raw_video_path=raw_video_path,
                             output_path=output_video_path,
                             gemini_key=gemini_key,
                             pexels_key=pexels_key,
+                            vocab_hints=vocab_hints,
                             progress_callback=update_progress
                         )
                         st.session_state["processed_video"] = final_path
                         st.session_state["current_file"] = uploaded_file.name
                         st.session_state["edit_plan"] = plan
+                        st.session_state["transcript_data"] = transcript_data
+                        st.session_state["output_path"] = output_video_path
                         st.rerun()
                 except Exception as e:
                     st.error(f"Pipeline Error: {e}")
@@ -184,7 +197,81 @@ if uploaded_file is not None:
                         file_name="final_edited_video.mp4",
                         mime="video/mp4"
                     )
-                st.success("🎉 Video rendered successfully with synchronized subtitles and translucent photo overlays!")
+                st.success("🎉 Video rendered with animated photo cards and desk-aligned subtitles!")
+
+    # Subtitle Review & Live Editor
+    if "transcript_data" in st.session_state and st.session_state.get("processed_video"):
+        st.markdown("---")
+        with st.expander("📝 Subtitle Review & Instant Editor (Fix Names & Typos)", expanded=True):
+            st.markdown(
+                "Notice a misspelled name or proper noun (e.g. *Hema Prasad* $\\to$ *Hyma Prasad*)? "
+                "Edit below and click **Re-Burn Subtitles** to update the video in ~1-2 seconds without re-rendering the whole video!"
+            )
+            
+            # Find & Replace Tool
+            st.markdown("##### 🔍 Quick Find & Replace")
+            fr_col1, fr_col2, fr_col3 = st.columns([3, 3, 2])
+            with fr_col1:
+                find_txt = st.text_input("Find text", placeholder="e.g. Hema Prasad", key="fr_find")
+            with fr_col2:
+                replace_txt = st.text_input("Replace with", placeholder="e.g. Hyma Prasad", key="fr_replace")
+            with fr_col3:
+                st.write("")
+                st.write("")
+                if st.button("Apply Replacement", key="btn_apply_fr"):
+                    if find_txt:
+                        count = 0
+                        for seg in st.session_state["transcript_data"].get("segments", []):
+                            if find_txt.lower() in seg["text"].lower():
+                                seg["text"] = re.sub(re.escape(find_txt), replace_txt, seg["text"], flags=re.IGNORECASE)
+                                count += 1
+                        st.success(f"Replaced {count} occurrences of '{find_txt}' with '{replace_txt}'!")
+                        st.rerun()
+            
+            # Interactive Data Editor Table
+            st.markdown("##### ✏️ Interactive Subtitle Table")
+            segments = st.session_state["transcript_data"].get("segments", [])
+            df = pd.DataFrame([
+                {"ID": s["id"], "Start": f"{s['start']:.1f}s", "End": f"{s['end']:.1f}s", "Subtitle Text": s["text"]}
+                for s in segments
+            ])
+            edited_df = st.data_editor(
+                df,
+                column_config={
+                    "ID": st.column_config.NumberColumn(disabled=True, width="small"),
+                    "Start": st.column_config.TextColumn(disabled=True, width="small"),
+                    "End": st.column_config.TextColumn(disabled=True, width="small"),
+                    "Subtitle Text": st.column_config.TextColumn(width="large")
+                },
+                use_container_width=True,
+                num_rows="fixed",
+                key="sub_editor"
+            )
+            
+            # Fast Re-Burn Button
+            if st.button("⚡ Re-Burn Subtitles into Video (Takes ~2s)", key="btn_reburn"):
+                # Update segments from dataframe
+                for idx, row in edited_df.iterrows():
+                    if idx < len(segments):
+                        segments[idx]["text"] = row["Subtitle Text"]
+                
+                # Write updated srt
+                updated_srt = "subtitles.srt"
+                write_subtitles_srt(st.session_state["transcript_data"], updated_srt)
+                
+                # Fast re-burn using FFmpeg on temp_assembled.mp4
+                base_video = "temp_assembled.mp4" if os.path.exists("temp_assembled.mp4") else raw_video_path
+                target_output = st.session_state.get("output_path", "final_edited_video.mp4")
+                
+                burn_subtitles_ffmpeg(
+                    video_input_path=base_video,
+                    srt_path=updated_srt,
+                    video_output_path=target_output,
+                    margin_v=margin_v
+                )
+                st.session_state["processed_video"] = target_output
+                st.success("✨ Subtitles updated and re-burned into video in ~1.5 seconds!")
+                st.rerun()
 
     # Inspect AI Blueprint
     if "edit_plan" in st.session_state:

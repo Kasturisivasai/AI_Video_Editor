@@ -38,7 +38,7 @@ def extract_audio(video_path: str, audio_path: str = "temp_audio.wav") -> str:
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     return audio_path
 
-def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY) -> dict:
+def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, vocab_hints: str = "") -> dict:
     """Uses Gemini 3.6 Flash to transcribe and translate audio into concise English subtitle segments."""
     genai.configure(api_key=api_key, transport="rest")
     model = genai.GenerativeModel("gemini-3.6-flash", generation_config={"response_mime_type": "application/json"})
@@ -46,22 +46,31 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY) 
     with open(audio_path, "rb") as f:
         audio_bytes = f.read()
 
-    prompt = """
+    hint_text = ""
+    if vocab_hints and vocab_hints.strip():
+        hint_text = f"""
+    IMPORTANT PROPER NOUN & VOCABULARY HINTS:
+    The following names, proper nouns, or specialized terminology are mentioned in this video:
+    "{vocab_hints.strip()}"
+    Always prioritize and use these exact spellings in your English subtitle transcription.
+    """
+
+    prompt = f"""
     Listen to this entire audio track carefully.
     Transcribe and translate the entire speech into natural, conversational English subtitle segments.
-    
+    {hint_text}
     CRITICAL GUIDELINES FOR HIGH-ENGAGEMENT SOCIAL CAPTIONS:
     - Keep each segment short and punchy: strictly 3 to 6 words (under 30 characters).
     - Accurately timestamp start and end in seconds (e.g., 0.8 to 4.2).
     - Cover the entire speech timeline from beginning to end without gaps or skipping.
     
     Return strict JSON matching this schema:
-    {
+    {{
       "language": "detected_code",
       "segments": [
-        {"id": 1, "start": float, "end": float, "text": "Short punchy phrase"}
+        {{"id": 1, "start": float, "end": float, "text": "Short punchy phrase"}}
       ]
-    }
+    }}
     """
     response = model.generate_content([{"mime_type": "audio/wav", "data": audio_bytes}, prompt])
     clean_json = response.text.strip().removeprefix("```json").removesuffix("```").strip()
@@ -168,6 +177,36 @@ def write_subtitles_srt(transcript_data: dict, srt_path: str = "subtitles.srt") 
             text = seg["text"].strip()
             f.write(f"{idx + 1}\n{start} --> {end}\n{text}\n\n")
     return srt_path
+
+def burn_subtitles_ffmpeg(
+    video_input_path: str,
+    srt_path: str,
+    video_output_path: str,
+    margin_v: int = 15
+) -> str:
+    """Fast subtitle burning using FFmpeg directly (takes ~1-2 seconds, zero video re-encoding required)."""
+    ffmpeg = get_ffmpeg_exe()
+    style_opts = (
+        "FontName=Arial,"
+        "FontSize=12,"
+        "Bold=1,"
+        "PrimaryColour=&H00FFFFFF,"
+        "OutlineColour=&H90000000,"
+        "BorderStyle=3,"
+        "Outline=2,"
+        "Shadow=0,"
+        "Alignment=2,"
+        f"MarginV={margin_v}"
+    )
+    safe_srt = srt_path.replace("\\", "/")
+    cmd = [
+        ffmpeg, "-y", "-i", video_input_path,
+        "-vf", f"subtitles='{safe_srt}':force_style='{style_opts}'",
+        "-c:a", "copy", video_output_path
+    ]
+    subprocess.run(cmd, check=True)
+    return video_output_path
+
 
 from PIL import Image, ImageDraw, ImageFilter
 
@@ -326,8 +365,8 @@ def assemble_final_video(
     ]
     subprocess.run(cmd, check=True)
 
-    # Cleanup temp
-    for temp_f in [temp_output, "temp_assembledTEMP_MPY_wvf_snd.mp4"]:
+    # Cleanup temp sound files, keep temp_assembled.mp4 for instant subtitle re-burns
+    for temp_f in ["temp_assembledTEMP_MPY_wvf_snd.mp4"]:
         if os.path.exists(temp_f):
             try:
                 os.remove(temp_f)
@@ -341,7 +380,7 @@ def run_pipeline(
     output_path: str = "final_edited_video.mp4",
     gemini_key: str = DEFAULT_GEMINI_KEY,
     pexels_key: str = DEFAULT_PEXELS_KEY,
-    translucent_opacity: float = 0.30,
+    vocab_hints: str = "",
     progress_callback = None
 ):
     """End-to-end processing pipeline with progress updates."""
@@ -355,7 +394,7 @@ def run_pipeline(
     audio_path = extract_audio(raw_video_path, "temp_audio.wav")
     
     notify(15, "Transcribing and translating audio with Gemini 3.6 Flash...")
-    transcript_data = transcribe_audio_gemini(audio_path, api_key=gemini_key)
+    transcript_data = transcribe_audio_gemini(audio_path, api_key=gemini_key, vocab_hints=vocab_hints)
     with open("transcript_english.json", "w", encoding="utf-8") as f:
         json.dump(transcript_data, f, indent=2)
 
@@ -384,4 +423,4 @@ def run_pipeline(
     )
 
     notify(100, "Video editing complete!")
-    return final_video, updated_plan
+    return final_video, updated_plan, transcript_data

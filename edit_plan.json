@@ -2,69 +2,69 @@
   "hook_segment": null,
   "visual_cues": [
     {
-      "start": 2.0,
-      "end": 5.8,
-      "search_keyword": "toxic workplace office conflict",
+      "start": 1.5,
+      "end": 5.5,
+      "search_keyword": "toxic workplace corporate office",
       "asset_type": "photo",
-      "reason": "Establishes the core topic of toxic workplace environments",
-      "local_file": "assets/b_roll\\asset_0_toxic_workplace_office_co.jpg"
+      "reason": "Establishes the core subject of toxic workplace dynamics immediately",
+      "local_file": "assets/b_roll\\asset_0_toxic_workplace_corporate.jpg"
     },
     {
-      "start": 16.0,
-      "end": 19.8,
-      "search_keyword": "modern corporate office skyscraper",
+      "start": 14.5,
+      "end": 18.5,
+      "search_keyword": "young professional corporate success",
       "asset_type": "photo",
-      "reason": "Illustrates young corporate professional starting an MNC career",
-      "local_file": "assets/b_roll\\asset_1_modern_corporate_office_s.jpg"
+      "reason": "Visually presents the talented young professional getting hired",
+      "local_file": "assets/b_roll\\asset_1_young_professional_corpor.jpg"
+    },
+    {
+      "start": 31.0,
+      "end": 35.0,
+      "search_keyword": "salary growth money stack",
+      "asset_type": "photo",
+      "reason": "Highlights the dramatic salary comparison that triggered envy",
+      "local_file": "assets/b_roll\\asset_2_salary_growth_money_stack.jpg"
     },
     {
       "start": 37.0,
       "end": 41.0,
-      "search_keyword": "cash salary growth money stack",
+      "search_keyword": "jealous colleagues office drama",
       "asset_type": "photo",
-      "reason": "Visualizes rapid salary growth and income disparity",
-      "local_file": "assets/b_roll\\asset_2_cash_salary_growth_money_.jpg"
+      "reason": "Illustrates workplace jealousy and negative peer pressure",
+      "local_file": "assets/b_roll\\asset_3_jealous_colleagues_office.jpg"
     },
     {
-      "start": 42.5,
-      "end": 46.5,
-      "search_keyword": "jealous colleagues whispering office",
+      "start": 51.5,
+      "end": 55.5,
+      "search_keyword": "depressed man office stress",
       "asset_type": "photo",
-      "reason": "Captures workplace envy and backstabbing culture",
-      "local_file": "assets/b_roll\\asset_3_jealous_colleagues_whispe.jpg"
+      "reason": "Captures the emotional toll and mental breakdown caused by harassment",
+      "local_file": "assets/b_roll\\asset_4_depressed_man_office_stre.jpg"
     },
     {
-      "start": 52.5,
-      "end": 56.5,
-      "search_keyword": "depressed stressed office worker",
+      "start": 118.5,
+      "end": 122.5,
+      "search_keyword": "corporate sabotage whispering",
       "asset_type": "photo",
-      "reason": "Highlights the emotional toll and mental depression",
-      "local_file": "assets/b_roll\\asset_4_depressed_stressed_office.jpg"
-    },
-    {
-      "start": 80.0,
-      "end": 84.0,
-      "search_keyword": "mental stress burnout workplace",
-      "asset_type": "photo",
-      "reason": "Emphasizes the damaging impact of toxic group mentality",
-      "local_file": "assets/b_roll\\asset_5_mental_stress_burnout_wor.jpg"
+      "reason": "Emphasizes toxic plotting and corporate politics",
+      "local_file": "assets/b_roll\\asset_5_corporate_sabotage_whispe.jpg"
     }
   ],
   "punch_ins": [
     {
-      "start": 38.0,
-      "end": 39.5,
-      "reason": "Emphasis on key statistic: salary was double"
+      "start": 33.5,
+      "end": 35.5,
+      "reason": "Highlights the stark income disparity that sparked jealousy"
     },
     {
-      "start": 52.5,
-      "end": 54.2,
-      "reason": "Emotional peak: drove him into depression"
+      "start": 53.0,
+      "end": 55.0,
+      "reason": "Emphasizes the severity of the psychological impact"
     },
     {
-      "start": 78.0,
-      "end": 79.8,
-      "reason": "Crux of conflict: attempt to push him out"
+      "start": 115.5,
+      "end": 117.5,
+      "reason": "Punches in on the dramatic turn of corporate sabotage"
     }
   ]
 }

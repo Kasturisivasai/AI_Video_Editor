@@ -1,120 +1,116 @@
 1
-00:00:00,000 --> 00:00:02,100
-I handled a case study...
+00:00:00,000 --> 00:00:02,000
+I recently handled a case
 
 2
-00:00:02,100 --> 00:00:04,800
-...about toxic managers and employees.
+00:00:02,000 --> 00:00:04,200
+about toxic managers and employees.
 
 3
-00:00:04,800 --> 00:00:08,200
-I am Dr. Hema Prasad, Psychologist.
+00:00:04,200 --> 00:00:05,800
+Let me share it now.
 
 4
-00:00:08,200 --> 00:00:10,900
-I know a young boy...
+00:00:05,800 --> 00:00:08,000
+I am Dr. Hema Prasad, psychologist.
 
 5
-00:00:10,900 --> 00:00:13,500
-...who was very smart.
+00:00:09,800 --> 00:00:12,200
+A young guy I know,
 
 6
-00:00:13,500 --> 00:00:16,000
-At a very young age,
+00:00:12,200 --> 00:00:14,500
+who is very smart,
 
 7
-00:00:16,000 --> 00:00:19,800
-he got an MNC job.
+00:00:14,500 --> 00:00:16,500
+landed an MNC job
 
 8
-00:00:19,800 --> 00:00:22,800
-As he was working there,
+00:00:16,500 --> 00:00:19,000
+at a very young age.
 
 9
-00:00:22,800 --> 00:00:26,800
-his colleagues were much older.
+00:00:19,000 --> 00:00:21,000
+While working there,
 
 10
-00:00:26,800 --> 00:00:30,100
-When he performed so well,
+00:00:21,000 --> 00:00:24,500
+his colleagues were much older.
 
 11
-00:00:30,100 --> 00:00:33,300
-and did his job well,
+00:00:24,500 --> 00:00:27,500
+They saw his good performance
 
 12
-00:00:33,300 --> 00:00:35,800
-his salary kept increasing.
+00:00:27,500 --> 00:00:30,500
+and his regular salary hikes.
 
 13
-00:00:35,800 --> 00:00:38,000
-Compared to his colleagues,
+00:00:30,500 --> 00:00:33,500
+Compared to them,
 
 14
-00:00:38,000 --> 00:00:40,500
-his salary was double.
+00:00:33,500 --> 00:00:36,500
+he earned twice as much.
 
 15
-00:00:40,500 --> 00:00:42,500
-They felt very jealous...
+00:00:36,500 --> 00:00:39,500
+So they felt jealous
 
 16
-00:00:42,500 --> 00:00:45,300
-...and constantly criticized him.
+00:00:39,500 --> 00:00:43,000
+and constantly criticized him.
 
 17
-00:00:45,300 --> 00:00:48,000
-Right to his face,
+00:00:43,000 --> 00:00:46,500
+Because of that, he faced
 
 18
-00:00:48,000 --> 00:00:50,000
-they used vulgar language
+00:00:46,500 --> 00:00:49,500
+vulgar language and abuse.
 
 19
-00:00:50,000 --> 00:00:52,500
-and abused him constantly.
+00:00:49,500 --> 00:00:53,000
+They treated him terribly,
 
 20
-00:00:52,500 --> 00:00:55,800
-This drove him into depression.
+00:00:53,000 --> 00:00:55,500
+pushing him into depression.
 
 21
-00:00:55,800 --> 00:00:58,700
+00:00:55,500 --> 00:00:58,500
 Later, he came to me.
 
 22
-00:00:58,700 --> 00:01:01,300
-After he came to me,
+00:00:58,500 --> 00:01:42,000
+When I analyzed the situation,
 
 23
-00:01:01,300 --> 00:01:05,100
-when we analyzed the situation,
+00:01:42,000 --> 00:01:45,500
+it was his environment.
 
 24
-00:01:05,100 --> 00:01:07,700
-the work environment around him...
-
-25
-00:01:07,700 --> 00:01:10,800
+00:01:45,500 --> 00:01:48,500
 He just wanted to work happily.
 
+25
+00:01:48,500 --> 00:01:52,000
+He was a knowledgeable person
+
 26
-00:01:10,800 --> 00:01:13,600
-He was very knowledgeable
+00:01:52,000 --> 00:01:55,500
+who got along with everyone.
 
 27
-00:01:13,600 --> 00:01:16,800
-and collaborated with everyone.
+00:01:55,500 --> 00:01:59,000
+Their plot to kick him out
 
 28
-00:01:16,800 --> 00:01:20,100
-Their goal to push him out
+00:01:59,000 --> 00:02:02,500
+and their toxic mindset
 
 29
-00:01:20,100 --> 00:01:23,000
-and the toxic thoughts around
-
-30
-00:01:23,000 --> 00:01:27,100
-severely impacted his life.
+00:02:02,500 --> 00:02:06,500
+deeply impacted his life.
 
