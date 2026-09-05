@@ -1,0 +1,380 @@
+{
+  "language": "te",
+  "language_probability": 1,
+  "duration": 90.0053125,
+  "segments": [
+    {
+      "id": 1,
+      "start": 0.56,
+      "end": 5.9,
+      "text": "ὁ ὃ Ὁ ὅ ḍἍἋἂἎ ὗἍἓ � branch ʂἋἓἄἅἄ ʂἋἊἎἂἎ ὃἋἓἊἎ",
+      "words": [
+        {
+          "word": "ὁ",
+          "start": 0.56,
+          "end": 1.08,
+          "probability": 0.06
+        },
+        {
+          "word": "ὃ",
+          "start": 1.08,
+          "end": 1.2,
+          "probability": 0.46
+        },
+        {
+          "word": "Ὁ",
+          "start": 1.2,
+          "end": 1.2,
+          "probability": 0.58
+        },
+        {
+          "word": "ὅ",
+          "start": 1.2,
+          "end": 1.2,
+          "probability": 0.56
+        },
+        {
+          "word": "ḍἍἋἂἎ",
+          "start": 1.2,
+          "end": 2.64,
+          "probability": 0.38
+        },
+        {
+          "word": "ὗἍἓ",
+          "start": 2.64,
+          "end": 5.9,
+          "probability": 0.5
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "start": 6.1,
+      "end": 8.98,
+      "text": "ΊἍἍἆἄἄἎἊ ʂἋἄἎἄἅἎἄἄἎἎ and says,",
+      "words": []
+    },
+    {
+      "id": 3,
+      "start": 67.72,
+      "end": 69.98,
+      "text": "this subject in you will",
+      "words": [
+        {
+          "word": "this",
+          "start": 67.72,
+          "end": 68.02,
+          "probability": 0.01
+        },
+        {
+          "word": "subject",
+          "start": 68.02,
+          "end": 69.1,
+          "probability": 0.33
+        },
+        {
+          "word": "in",
+          "start": 69.1,
+          "end": 69.32,
+          "probability": 0.04
+        },
+        {
+          "word": "you",
+          "start": 69.32,
+          "end": 69.42,
+          "probability": 0.07
+        },
+        {
+          "word": "will",
+          "start": 69.42,
+          "end": 69.98,
+          "probability": 0.21
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "start": 71.02,
+      "end": 73.26,
+      "text": "not know you explain it",
+      "words": [
+        {
+          "word": "not",
+          "start": 71.02,
+          "end": 71.88,
+          "probability": 0.01
+        },
+        {
+          "word": "know",
+          "start": 71.88,
+          "end": 71.88,
+          "probability": 0.2
+        },
+        {
+          "word": "you",
+          "start": 71.88,
+          "end": 72.04,
+          "probability": 0.0
+        },
+        {
+          "word": "explain",
+          "start": 72.04,
+          "end": 72.98,
+          "probability": 0.29
+        },
+        {
+          "word": "it",
+          "start": 72.98,
+          "end": 73.26,
+          "probability": 0.59
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "start": 73.26,
+      "end": 76.98,
+      "text": "he is a subject to you",
+      "words": [
+        {
+          "word": "he",
+          "start": 73.26,
+          "end": 74.74,
+          "probability": 0.0
+        },
+        {
+          "word": "is",
+          "start": 74.74,
+          "end": 75.48,
+          "probability": 0.11
+        },
+        {
+          "word": "a",
+          "start": 75.48,
+          "end": 75.66,
+          "probability": 0.04
+        },
+        {
+          "word": "subject",
+          "start": 75.66,
+          "end": 75.66,
+          "probability": 0.43
+        },
+        {
+          "word": "to",
+          "start": 75.66,
+          "end": 75.66,
+          "probability": 0.01
+        },
+        {
+          "word": "you",
+          "start": 75.66,
+          "end": 76.98,
+          "probability": 0.43
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "start": 76.98,
+      "end": 77.94,
+      "text": "he can not say",
+      "words": [
+        {
+          "word": "he",
+          "start": 76.98,
+          "end": 77.4,
+          "probability": 0.16
+        },
+        {
+          "word": "can",
+          "start": 77.4,
+          "end": 77.4,
+          "probability": 0.36
+        },
+        {
+          "word": "not",
+          "start": 77.4,
+          "end": 77.94,
+          "probability": 0.51
+        },
+        {
+          "word": "say",
+          "start": 77.94,
+          "end": 77.94,
+          "probability": 0.05
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "start": 77.94,
+      "end": 79.56,
+      "text": "but he can express himself",
+      "words": [
+        {
+          "word": "but",
+          "start": 77.94,
+          "end": 78.32,
+          "probability": 0.33
+        },
+        {
+          "word": "he",
+          "start": 78.32,
+          "end": 79.14,
+          "probability": 0.36
+        },
+        {
+          "word": "can",
+          "start": 79.14,
+          "end": 79.14,
+          "probability": 0.35
+        },
+        {
+          "word": "express",
+          "start": 79.14,
+          "end": 79.22,
+          "probability": 0.1
+        },
+        {
+          "word": "himself",
+          "start": 79.22,
+          "end": 79.56,
+          "probability": 0.12
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "start": 79.56,
+      "end": 81.72,
+      "text": "I can not express him",
+      "words": [
+        {
+          "word": "I",
+          "start": 79.56,
+          "end": 79.56,
+          "probability": 0.02
+        },
+        {
+          "word": "can",
+          "start": 79.56,
+          "end": 80.1,
+          "probability": 0.21
+        },
+        {
+          "word": "not",
+          "start": 80.1,
+          "end": 80.1,
+          "probability": 0.71
+        },
+        {
+          "word": "express",
+          "start": 80.1,
+          "end": 80.28,
+          "probability": 0.83
+        },
+        {
+          "word": "him",
+          "start": 80.28,
+          "end": 81.72,
+          "probability": 0.08
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "start": 81.72,
+      "end": 84.08,
+      "text": "even if he is full of answers",
+      "words": [
+        {
+          "word": "even",
+          "start": 81.72,
+          "end": 82.78,
+          "probability": 0.03
+        },
+        {
+          "word": "if",
+          "start": 82.78,
+          "end": 82.82,
+          "probability": 0.53
+        },
+        {
+          "word": "he",
+          "start": 82.82,
+          "end": 83.08,
+          "probability": 0.74
+        },
+        {
+          "word": "is",
+          "start": 83.08,
+          "end": 83.36,
+          "probability": 0.07
+        },
+        {
+          "word": "full",
+          "start": 83.36,
+          "end": 83.64,
+          "probability": 0.07
+        },
+        {
+          "word": "of",
+          "start": 83.64,
+          "end": 84.08,
+          "probability": 0.9
+        },
+        {
+          "word": "answers",
+          "start": 84.08,
+          "end": 84.08,
+          "probability": 0.44
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "start": 84.08,
+      "end": 86.32,
+      "text": "he is failing in many interviews",
+      "words": [
+        {
+          "word": "he",
+          "start": 84.08,
+          "end": 84.56,
+          "probability": 0.21
+        },
+        {
+          "word": "is",
+          "start": 84.56,
+          "end": 85.3,
+          "probability": 0.15
+        },
+        {
+          "word": "failing",
+          "start": 85.3,
+          "end": 85.3,
+          "probability": 0.34
+        },
+        {
+          "word": "in",
+          "start": 85.3,
+          "end": 85.3,
+          "probability": 0.15
+        },
+        {
+          "word": "many",
+          "start": 85.3,
+          "end": 85.58,
+          "probability": 0.54
+        },
+        {
+          "word": "interviews",
+          "start": 85.58,
+          "end": 86.32,
+          "probability": 0.77
+        }
+      ]
+    }
+  ]
+}

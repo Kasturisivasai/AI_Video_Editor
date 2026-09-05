@@ -1,0 +1,70 @@
+{
+  "hook_segment": null,
+  "visual_cues": [
+    {
+      "start": 2.0,
+      "end": 5.8,
+      "search_keyword": "toxic workplace office conflict",
+      "asset_type": "photo",
+      "reason": "Establishes the core topic of toxic workplace environments",
+      "local_file": "assets/b_roll\\asset_0_toxic_workplace_office_co.jpg"
+    },
+    {
+      "start": 16.0,
+      "end": 19.8,
+      "search_keyword": "modern corporate office skyscraper",
+      "asset_type": "photo",
+      "reason": "Illustrates young corporate professional starting an MNC career",
+      "local_file": "assets/b_roll\\asset_1_modern_corporate_office_s.jpg"
+    },
+    {
+      "start": 37.0,
+      "end": 41.0,
+      "search_keyword": "cash salary growth money stack",
+      "asset_type": "photo",
+      "reason": "Visualizes rapid salary growth and income disparity",
+      "local_file": "assets/b_roll\\asset_2_cash_salary_growth_money_.jpg"
+    },
+    {
+      "start": 42.5,
+      "end": 46.5,
+      "search_keyword": "jealous colleagues whispering office",
+      "asset_type": "photo",
+      "reason": "Captures workplace envy and backstabbing culture",
+      "local_file": "assets/b_roll\\asset_3_jealous_colleagues_whispe.jpg"
+    },
+    {
+      "start": 52.5,
+      "end": 56.5,
+      "search_keyword": "depressed stressed office worker",
+      "asset_type": "photo",
+      "reason": "Highlights the emotional toll and mental depression",
+      "local_file": "assets/b_roll\\asset_4_depressed_stressed_office.jpg"
+    },
+    {
+      "start": 80.0,
+      "end": 84.0,
+      "search_keyword": "mental stress burnout workplace",
+      "asset_type": "photo",
+      "reason": "Emphasizes the damaging impact of toxic group mentality",
+      "local_file": "assets/b_roll\\asset_5_mental_stress_burnout_wor.jpg"
+    }
+  ],
+  "punch_ins": [
+    {
+      "start": 38.0,
+      "end": 39.5,
+      "reason": "Emphasis on key statistic: salary was double"
+    },
+    {
+      "start": 52.5,
+      "end": 54.2,
+      "reason": "Emotional peak: drove him into depression"
+    },
+    {
+      "start": 78.0,
+      "end": 79.8,
+      "reason": "Crux of conflict: attempt to push him out"
+    }
+  ]
+}

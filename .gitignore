@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Secrets & Environment variables
+.env
+.env.local
+.streamlit/secrets.toml
+
+# Large Media & Video Binaries (prevent repo bloat)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.wav
+*.mp3
+temp_*
+test_*
+assets/b_roll/
+assets/cache/
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.swp
+
+# OS generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
