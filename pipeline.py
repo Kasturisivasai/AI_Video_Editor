@@ -222,20 +222,10 @@ def write_subtitles_ass(
     ass_path: str = "subtitles.ass",
     video_w: int = 478,
     video_h: int = 850,
-    visual_cues: list = None,
-    mid_margin_v: int = 320,
-    top_margin_v: int = 70
+    highlight_words: str = "",
+    margin_v: int = 55
 ) -> str:
-    """Generates an ASS subtitle file with dynamic Mid/Top styles avoiding card overlap."""
-    if visual_cues is None:
-        visual_cues = []
-
-    # Map intervals where a BOTTOM card is active (odd index cues)
-    bottom_cue_intervals = []
-    for idx, cue in enumerate(visual_cues):
-        if idx % 2 == 1:
-            bottom_cue_intervals.append((float(cue.get("start", 0)), float(cue.get("end", 0))))
-
+    """Generates an ASS subtitle file with clean reel typography and in-line gold word highlighting."""
     font_size = max(16, int(video_w * 0.044)) # ~21px on 478w
     
     header = f"""[Script Info]
@@ -245,28 +235,28 @@ PlayResY: {video_h}
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Mid,Arial Black,{font_size},&H00FFFFFF,&H000000FF,&H00000000,&H90000000,-1,0,0,0,100,100,0,0,1,3,1.5,2,20,20,{mid_margin_v},1
-Style: Top,Arial Black,{font_size},&H00FFFFFF,&H000000FF,&H00000000,&H90000000,-1,0,0,0,100,100,0,0,1,3,1.5,8,20,20,{top_margin_v},1
+Style: ReelSub,Arial Black,{font_size},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3.2,1.2,2,20,20,{margin_v},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
+    # Parse highlight keywords
+    hl_list = [w.strip() for w in highlight_words.split(",") if w.strip()]
+
     events = []
     for seg in transcript_data.get("segments", []):
         start_sec = float(seg["start"])
         end_sec = float(seg["end"])
         start_str = format_ass_time(start_sec)
         end_str = format_ass_time(end_sec)
-        text = seg["text"].strip()
+        text = seg["text"].strip().upper()
         
-        # Check if this segment overlaps with a bottom-placed card
-        is_bottom_card_active = any(
-            not (end_sec <= b_start or start_sec >= b_end)
-            for b_start, b_end in bottom_cue_intervals
-        )
-        
-        style = "Top" if is_bottom_card_active else "Mid"
-        events.append(f"Dialogue: 0,{start_str},{end_str},{style},,0,0,0,,{text}")
+        # Apply in-line keyword highlighting with ASS color tags (vibrant electric gold)
+        for hw in hl_list:
+            pattern = re.compile(rf"\b({re.escape(hw.upper())})\b", re.IGNORECASE)
+            text = pattern.sub(r"{\\c&H0000E6FF&}\1{\\c&H00FFFFFF&}", text)
+
+        events.append(f"Dialogue: 0,{start_str},{end_str},ReelSub,,0,0,0,,{text}")
 
     with open(ass_path, "w", encoding="utf-8") as f:
         f.write(header + "\n".join(events) + "\n")
@@ -363,15 +353,11 @@ def create_card_pil(img_path, target_w=340, target_h=190, radius=18):
     canvas.paste(im, (pad, pad), mask)
     return canvas
 
-def make_animated_card_clip(img_path, duration, video_w, video_h, position="top"):
-    """Builds a MoviePy clip with pop-in zoom entry, Ken Burns drift, and safe upper/lower framing."""
+def make_animated_card_clip(img_path, duration, video_w, video_h):
+    """Builds a MoviePy clip with pop-in zoom entry, Ken Burns drift, in upper third safe zone."""
     target_w = int(video_w * 0.72)
     target_h = int(target_w * 0.5625)
-    
-    if position == "bottom":
-        y_center = int(video_h * 0.78)
-    else:
-        y_center = int(video_h * 0.17)
+    y_center = int(video_h * 0.17) # Upper third safe zone above head
     
     card_pil = create_card_pil(img_path, target_w, target_h)
     base_w, base_h = card_pil.size
@@ -399,60 +385,97 @@ def make_animated_card_clip(img_path, duration, video_w, video_h, position="top"
         pass
     return animated
 
-def create_keyword_badge_pil(word: str, video_w: int = 478) -> Image.Image:
-    """Creates a sleek, punchy keyword pop-out badge."""
-    clean_word = word.strip().upper()
-    font_size = max(16, int(video_w * 0.040))
+def create_reel_kinetic_word_pil(text: str, video_w: int = 478) -> Image.Image:
+    """
+    Renders pure, broadcast-grade kinetic typography identical to viral podcast reels (Sudheer Talks style).
+    - NO enclosing pill container or button box.
+    - Heavy Impact/Arial Black font.
+    - Dual-tone color hierarchy (Crimson Red + Electric Gold / Gold / Red).
+    - Deep drop shadow + black outer stroke + alpha transparency.
+    """
+    clean_text = text.strip().upper()
+    font_size = max(24, int(video_w * 0.095)) # ~45px on 478w
     try:
-        font = ImageFont.truetype("C:/Windows/Fonts/ariblk.ttf", font_size)
+        font = ImageFont.truetype("C:/Windows/Fonts/impact.ttf", font_size)
     except Exception:
-        font = ImageFont.load_default()
-        
+        try:
+            font = ImageFont.truetype("C:/Windows/Fonts/ariblk.ttf", font_size)
+        except Exception:
+            font = ImageFont.load_default()
+
+    words = clean_text.split()
     dummy = Image.new("RGBA", (1, 1))
     draw_d = ImageDraw.Draw(dummy)
-    bbox = draw_d.textbbox((0, 0), clean_word, font=font)
-    text_w = bbox[2] - bbox[0]
-    text_h = bbox[3] - bbox[1]
-    
-    pad_x = 22
-    pad_y = 9
-    badge_w = text_w + pad_x * 2
-    badge_h = text_h + pad_y * 2
-    
-    badge = Image.new("RGBA", (badge_w + 12, badge_h + 12), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(badge)
-    
-    shadow_box = [(6, 8), (badge_w + 6, badge_h + 8)]
-    draw.rounded_rectangle(shadow_box, radius=12, fill=(0, 0, 0, 140))
-    badge = badge.filter(ImageFilter.GaussianBlur(3))
-    
-    draw = ImageDraw.Draw(badge)
-    pill_box = [(6, 6), (badge_w + 6, badge_h + 6)]
-    draw.rounded_rectangle(pill_box, radius=12, fill=(18, 20, 24, 235), outline=(255, 225, 0, 255), width=2)
-    
-    tx = 6 + pad_x
-    ty = 6 + pad_y - 2
-    draw.text((tx, ty), clean_word, font=font, fill=(255, 230, 0, 255))
-    return badge
 
-def make_keyword_popout_clip(word: str, start: float, duration: float, video_w: int, video_h: int, y_pos: int = None):
-    """Generates an animated pop-out badge clip that springs in when the keyword is spoken."""
+    # Word colors: first word crimson red, subsequent words electric gold
+    word_colors = []
+    if len(words) >= 2:
+        word_colors = [(255, 38, 38)] + [(255, 230, 0)] * (len(words) - 1)
+    else:
+        word_colors = [(255, 230, 0)]
+
+    space_w = draw_d.textbbox((0, 0), " ", font=font)[2]
+    total_w = 0
+    max_h = 0
+    word_metrics = []
+    for w in words:
+        bbox = draw_d.textbbox((0, 0), w, font=font)
+        ww = bbox[2] - bbox[0]
+        wh = bbox[3] - bbox[1]
+        word_metrics.append((w, bbox, ww, wh))
+        total_w += ww
+        max_h = max(max_h, wh)
+    total_w += space_w * max(0, len(words) - 1)
+
+    pad = 28
+    canvas_w = total_w + pad * 2
+    canvas_h = max_h + pad * 2
+
+    # 1. Soft deep drop shadow layer
+    shadow_img = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    s_draw = ImageDraw.Draw(shadow_img)
+    curr_x = pad
+    for w, bbox, ww, wh in word_metrics:
+        s_draw.text((curr_x - bbox[0], pad - bbox[1] + 5), w, font=font, fill=(0, 0, 0, 220))
+        curr_x += ww + space_w
+    shadow_img = shadow_img.filter(ImageFilter.GaussianBlur(5))
+
+    # 2. Crisp stroke and vibrant text fill layer
+    text_img = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    t_draw = ImageDraw.Draw(text_img)
+    curr_x = pad
+    for idx, (w, bbox, ww, wh) in enumerate(word_metrics):
+        col = word_colors[idx]
+        t_draw.text(
+            (curr_x - bbox[0], pad - bbox[1]),
+            w,
+            font=font,
+            fill=col,
+            stroke_width=4,
+            stroke_fill=(0, 0, 0, 255)
+        )
+        curr_x += ww + space_w
+
+    return Image.alpha_composite(shadow_img, text_img)
+
+def make_reel_kinetic_word_clip(text: str, start: float, duration: float, video_w: int, video_h: int, y_pos: int = None):
+    """Generates an animated kinetic text clip with punch-in zoom entry and clean fade-out."""
     if y_pos is None:
-        y_pos = int(video_h * 0.54) # sits right above the 60% subtitle line
+        y_pos = int(video_h * 0.58) # chest area, completely clear of face and bottom desk
         
-    badge_pil = create_keyword_badge_pil(word, video_w)
-    base_w, base_h = badge_pil.size
-    badge_np = np.array(badge_pil)
+    text_pil = create_reel_kinetic_word_pil(text, video_w)
+    base_w, base_h = text_pil.size
+    text_np = np.array(text_pil)
     
-    clip = ImageClip(badge_np, ismask=False).set_duration(duration).set_start(start)
+    clip = ImageClip(text_np, ismask=False).set_duration(duration).set_start(start)
     
     def scale_fn(t):
-        if t < 0.22:
-            p = t / 0.22
-            return 0.65 + 0.35 * (1.0 - (1.0 - p)**3)
+        if t < 0.18:
+            p = t / 0.18
+            return 0.88 + 0.12 * (1.0 - (1.0 - p)**3)
         elif t > duration - 0.20:
             p = (duration - t) / 0.20
-            return max(0.6, p)
+            return max(0.8, p)
         else:
             return 1.0
             
@@ -464,7 +487,7 @@ def make_keyword_popout_clip(word: str, start: float, duration: float, video_w: 
         
     animated = clip.resize(scale_fn).set_position(pos_fn)
     try:
-        animated = animated.crossfadein(0.12).crossfadeout(0.18)
+        animated = animated.crossfadein(0.08).crossfadeout(0.18)
     except Exception:
         pass
     return animated
@@ -476,16 +499,16 @@ def assemble_final_video(
     output_path: str = "final_edited_video.mp4",
     transcript_data: dict = None,
     highlight_words: str = "",
-    sub_margin_v: int = 320
+    sub_margin_v: int = 55
 ) -> str:
-    """Composites raw video with alternating animated photo cards, keyword pop-outs, and burns modern subtitles."""
+    """Composites raw video with upper animated photo cards, pure kinetic typography callouts, and desk subtitles."""
     main_clip = VideoFileClip(raw_video_path)
     combined = main_clip
 
     visual_cues = edit_plan.get("visual_cues") or edit_plan.get("b_roll_cues") or []
     overlays = [combined]
 
-    # Layer Alternating Photo Cards (Even = Top header, Odd = Lower desk)
+    # Layer Upper Photo Cards (Exclusively in upper third safe zone above head)
     for idx, cue in enumerate(visual_cues):
         local_path = cue.get("local_file")
         start = float(cue.get("start", 0))
@@ -494,11 +517,10 @@ def assemble_final_video(
 
         if local_path and os.path.exists(local_path) and duration > 0:
             is_image = local_path.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
-            card_position = "bottom" if idx % 2 == 1 else "top"
-            print(f"Overlaying Animated Photo Card '{cue.get('search_keyword')}' ({card_position}) at {start:.2f}s - {(start + duration):.2f}s...")
+            print(f"Overlaying Upper Photo Card '{cue.get('search_keyword')}' at {start:.2f}s - {(start + duration):.2f}s...")
             
             if is_image:
-                card_clip = make_animated_card_clip(local_path, duration, combined.w, combined.h, position=card_position)
+                card_clip = make_animated_card_clip(local_path, duration, combined.w, combined.h)
                 card_clip = card_clip.set_start(start)
                 overlays.append(card_clip)
             else:
@@ -515,7 +537,7 @@ def assemble_final_video(
                 asset_clip = asset_clip.set_position("center").set_start(start)
                 overlays.append(asset_clip)
 
-    # Layer Keyword Pop-Out Badges (When spoken words match user or AI keywords)
+    # Layer Pure Kinetic Typography Callouts (No childish pill boxes!)
     words_list = [w.strip().lower() for w in highlight_words.split(",") if w.strip()]
     if transcript_data:
         for seg in transcript_data.get("segments", []):
@@ -524,30 +546,30 @@ def assemble_final_video(
             end_t = float(seg.get("end", 0))
             dur = end_t - start_t
             if dur > 0.4:
-                matched_word = None
+                matched_phrase = None
                 for w in words_list:
                     if w in text_lower:
-                        matched_word = w.upper()
+                        matched_phrase = w.upper()
                         break
                         
-                if not matched_word:
+                if not matched_phrase:
                     for pi in edit_plan.get("punch_ins", []):
                         if abs(pi.get("start", 0) - start_t) < 1.5:
                             candidate_words = [cw for cw in re.sub(r"[^\w\s]", "", seg["text"]).split() if len(cw) > 3]
                             if candidate_words:
-                                matched_word = candidate_words[0].upper()
+                                matched_phrase = " ".join(candidate_words[:2]).upper()
                             break
 
-                if matched_word:
-                    badge_clip = make_keyword_popout_clip(
-                        matched_word,
+                if matched_phrase:
+                    callout_clip = make_reel_kinetic_word_clip(
+                        matched_phrase,
                         start=start_t,
-                        duration=min(dur, 2.5),
+                        duration=min(dur, 2.0),
                         video_w=combined.w,
                         video_h=combined.h,
-                        y_pos=int(combined.h * 0.54)
+                        y_pos=int(combined.h * 0.58)
                     )
-                    overlays.append(badge_clip)
+                    overlays.append(callout_clip)
 
     final_render = CompositeVideoClip(overlays)
     temp_output = "temp_assembled.mp4"
@@ -590,7 +612,7 @@ def run_pipeline(
     pexels_key: str = DEFAULT_PEXELS_KEY,
     vocab_hints: str = "",
     highlight_words: str = "",
-    sub_margin_v: int = 320,
+    sub_margin_v: int = 55,
     progress_callback = None
 ):
     """End-to-end processing pipeline with progress updates."""
@@ -603,7 +625,7 @@ def run_pipeline(
     notify(5, "Extracting audio track from video...")
     audio_path = extract_audio(raw_video_path, "temp_audio.wav")
     
-    notify(15, "Transcribing and translating audio with Gemini 3.6 Flash...")
+    notify(15, "Transcribing and translating audio with Gemini 3.7 Flash...")
     transcript_data = transcribe_audio_gemini(audio_path, api_key=gemini_key, vocab_hints=vocab_hints)
     with open("transcript_english.json", "w", encoding="utf-8") as f:
         json.dump(transcript_data, f, indent=2)
@@ -621,7 +643,7 @@ def run_pipeline(
         json.dump(updated_plan, f, indent=2)
 
     # Stage 4: Subtitles & Video Assembly (75-100%)
-    notify(75, "Generating synchronized ASS subtitle track with dynamic 60% placement...")
+    notify(75, "Generating synchronized ASS subtitles with in-line gold word highlights...")
     cues = updated_plan.get("visual_cues") or updated_plan.get("b_roll_cues") or []
     
     # Get video dimensions
@@ -634,13 +656,13 @@ def run_pipeline(
         ass_path="subtitles.ass",
         video_w=vid_w,
         video_h=vid_h,
-        visual_cues=cues,
-        mid_margin_v=sub_margin_v
+        highlight_words=highlight_words,
+        margin_v=sub_margin_v
     )
     # Also write standard srt for fallback
     write_subtitles_srt(transcript_data, "subtitles.srt")
 
-    notify(85, "Rendering animated cards, keyword pop-outs & burning subtitles...")
+    notify(85, "Rendering upper photo cards, kinetic reel typography & subtitles...")
     final_video = assemble_final_video(
         raw_video_path,
         updated_plan,

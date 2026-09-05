@@ -108,10 +108,10 @@ with st.sidebar:
     sub_margin_v = st.slider(
         "Subtitle Vertical Position (px from bottom)",
         min_value=15,
-        max_value=400,
-        value=320,
-        step=15,
-        help="320px anchors subtitles at the 60% mark (chest height). 15px anchors at the bottom."
+        max_value=250,
+        value=55,
+        step=10,
+        help="55px places subtitles cleanly across the lower desk line below the nameplate."
     )
 
 # Main Hero Header
@@ -191,6 +191,7 @@ if uploaded_file is not None:
                         st.session_state["edit_plan"] = plan
                         st.session_state["transcript_data"] = transcript_data
                         st.session_state["output_path"] = output_video_path
+                        st.session_state["highlight_words"] = highlight_words
                         st.rerun()
                 except Exception as e:
                     st.error(f"Pipeline Error: {e}")
@@ -265,12 +266,12 @@ if uploaded_file is not None:
                 
                 # Write updated ASS with dynamic styling
                 updated_ass = "subtitles.ass"
-                cues = st.session_state.get("edit_plan", {}).get("visual_cues", [])
+                hl_words = st.session_state.get("highlight_words", "")
                 write_subtitles_ass(
                     st.session_state["transcript_data"],
                     ass_path=updated_ass,
-                    visual_cues=cues,
-                    mid_margin_v=sub_margin_v
+                    highlight_words=hl_words,
+                    margin_v=sub_margin_v
                 )
                 write_subtitles_srt(st.session_state["transcript_data"], "subtitles.srt")
                 

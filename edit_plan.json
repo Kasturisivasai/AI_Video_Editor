@@ -2,74 +2,61 @@
   "hook_segment": null,
   "visual_cues": [
     {
-      "start": 13.8,
-      "end": 17.8,
-      "search_keyword": "successful young corporate professional",
+      "start": 22.0,
+      "end": 26.0,
+      "search_keyword": "top student excellent grades report card",
       "asset_type": "photo",
-      "reason": "Visualizes the high-achieving young employee landing a top corporate job.",
-      "local_file": "assets/b_roll\\asset_0_successful_young_corporat.jpg"
+      "reason": "Highlights the student's exceptional academic background and intelligence.",
+      "local_file": "assets/b_roll\\asset_0_top_student_excellent_gra.jpg"
     },
     {
-      "start": 35.8,
-      "end": 39.8,
-      "search_keyword": "money stack growth chart",
+      "start": 33.5,
+      "end": 37.5,
+      "search_keyword": "anxious young man social anxiety fear",
       "asset_type": "photo",
-      "reason": "Represents the significant salary hike and earning double compared to peers.",
-      "local_file": "assets/b_roll\\asset_1_money_stack_growth_chart.jpg"
+      "reason": "Illustrates the contrast of deep anxiety and fear of speaking English.",
+      "local_file": "assets/b_roll\\asset_1_anxious_young_man_social_.jpg"
     },
     {
-      "start": 40.0,
-      "end": 44.0,
-      "search_keyword": "jealous coworkers whispering office",
+      "start": 44.5,
+      "end": 48.5,
+      "search_keyword": "job interview rejection depressed candidate",
       "asset_type": "photo",
-      "reason": "Illustrates workplace jealousy, gossip, and hostility from older colleagues.",
-      "local_file": "assets/b_roll\\asset_2_jealous_coworkers_whisper.jpg"
+      "reason": "Visualizes the painful consequence of interview rejections due to communication barriers.",
+      "local_file": "assets/b_roll\\asset_2_job_interview_rejection_d.jpg"
     },
     {
-      "start": 47.9,
-      "end": 52.0,
-      "search_keyword": "workplace harassment stress employee",
+      "start": 66.5,
+      "end": 70.5,
+      "search_keyword": "magnifying glass stress pressure psychological concept",
       "asset_type": "photo",
-      "reason": "Highlights the intense abuse and harassment faced by the employee.",
-      "local_file": "assets/b_roll\\asset_3_workplace_harassment_stre.jpg"
+      "reason": "Metaphor for magnifying fear and perceiving simple interviews as terrifying hurdles.",
+      "local_file": "assets/b_roll\\asset_3_magnifying_glass_stress_p.jpg"
     },
     {
-      "start": 53.6,
-      "end": 57.8,
-      "search_keyword": "depressed person head in hands",
+      "start": 84.5,
+      "end": 88.5,
+      "search_keyword": "frustrated professional unable to speak communication block",
       "asset_type": "photo",
-      "reason": "Emphasizes the emotional impact leading to severe clinical depression.",
-      "local_file": "assets/b_roll\\asset_4_depressed_person_head_in_.jpg"
-    },
-    {
-      "start": 65.0,
-      "end": 69.0,
-      "search_keyword": "toxic dark workplace concept",
-      "asset_type": "photo",
-      "reason": "Reinforces the psychologist's diagnosis of a toxic work environment.",
-      "local_file": "assets/b_roll\\asset_5_toxic_dark_workplace_conc.jpg"
+      "reason": "Captures the emotional frustration of knowing answers but being unable to articulate them.",
+      "local_file": "assets/b_roll\\asset_4_frustrated_professional_u.jpg"
     }
   ],
   "punch_ins": [
     {
-      "start": 37.8,
-      "end": 39.8,
-      "reason": "Emphasizes the double salary trigger that sparked envy."
+      "start": 46.72,
+      "end": 48.06,
+      "reason": "Emphasizes the harsh reality of constant interview rejection."
     },
     {
-      "start": 47.9,
-      "end": 49.9,
-      "reason": "Drives focus to the harsh reality of workplace harassment."
+      "start": 68.0,
+      "end": 69.8,
+      "reason": "Emphasizes the psychological root cause: magnifying fear."
     },
     {
-      "start": 53.6,
-      "end": 55.5,
-      "reason": "Accentuates the critical turning point of severe depression."
-    },
-    {
-      "start": 65.0,
-      "end": 67.0,
-      "reason": "Punches in on the main conclusion: toxic environment."
+      "start": 87.72,
+      "end": 89.8,
+      "reason": "Dramatic climax highlighting repeated failures despite having full knowledge."
     }
   ]
 }

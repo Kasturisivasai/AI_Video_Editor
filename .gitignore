@@ -25,6 +25,7 @@ temp_*
 test_*
 assets/b_roll/
 assets/cache/
+scratch/
 
 # IDE & Editor settings
 .vscode/

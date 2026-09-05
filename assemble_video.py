@@ -33,17 +33,17 @@ def assemble_cut(
     probe_clip.close()
 
     cues = plan.get("visual_cues") or plan.get("b_roll_cues") or []
-    print("Generating dynamic ASS subtitles with 60% placement...")
+    print("Generating reel ASS subtitles with in-line gold word highlights...")
     ass_path = write_subtitles_ass(
         transcript_data,
         ass_path="subtitles.ass",
         video_w=vid_w,
         video_h=vid_h,
-        visual_cues=cues,
-        mid_margin_v=320
+        highlight_words="toxic, double, depression, money, salary, manager",
+        margin_v=55
     )
 
-    print("Assembling video with alternating photo cards, keyword pop-outs & subtitles...")
+    print("Assembling video with upper photo cards, kinetic reel typography & subtitles...")
     assemble_final_video(
         raw_video_path=raw_video_path,
         edit_plan=plan,
@@ -51,7 +51,7 @@ def assemble_cut(
         output_path=output_path,
         transcript_data=transcript_data,
         highlight_words="toxic, double, depression, money, salary, manager",
-        sub_margin_v=320
+        sub_margin_v=55
     )
     print(f"Done! Final edited video saved as {output_path}")
 
