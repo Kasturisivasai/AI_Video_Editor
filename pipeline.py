@@ -38,10 +38,17 @@ def extract_audio(video_path: str, audio_path: str = "temp_audio.wav") -> str:
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     return audio_path
 
+GEMINI_MODEL_CANDIDATES = [
+    "gemini-3.7-flash",
+    "gemini-flash-latest",
+    "gemini-3.5-flash-lite",
+    "gemini-3-flash-preview",
+    "gemini-3.6-flash"
+]
+
 def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, vocab_hints: str = "") -> dict:
-    """Uses Gemini 3.6 Flash to transcribe and translate audio into concise English subtitle segments."""
+    """Uses resilient Gemini models with auto-fallback to transcribe and translate audio into concise English subtitle segments."""
     genai.configure(api_key=api_key, transport="rest")
-    model = genai.GenerativeModel("gemini-3.6-flash", generation_config={"response_mime_type": "application/json"})
     
     with open(audio_path, "rb") as f:
         audio_bytes = f.read()
@@ -72,17 +79,27 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, 
       ]
     }}
     """
-    response = model.generate_content([{"mime_type": "audio/wav", "data": audio_bytes}, prompt])
-    clean_json = response.text.strip().removeprefix("```json").removesuffix("```").strip()
-    data = json.loads(clean_json)
-    if isinstance(data, list):
-        data = {"segments": data}
-    return data
+    last_err = None
+    for model_name in GEMINI_MODEL_CANDIDATES:
+        try:
+            print(f"Attempting transcription with model '{model_name}'...")
+            model = genai.GenerativeModel(model_name, generation_config={"response_mime_type": "application/json"})
+            response = model.generate_content([{"mime_type": "audio/wav", "data": audio_bytes}, prompt])
+            clean_json = response.text.strip().removeprefix("```json").removesuffix("```").strip()
+            data = json.loads(clean_json)
+            if isinstance(data, list):
+                data = {"segments": data}
+            print(f"Transcription successful using model '{model_name}' ({len(data.get('segments', []))} segments)")
+            return data
+        except Exception as e:
+            last_err = e
+            print(f"Model '{model_name}' quota/error: {e}. Falling back to next candidate...")
+            continue
+    raise last_err
 
 def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMINI_KEY) -> dict:
-    """AI Director Agent: Analyzes transcript to select high-relevance visual cues and punch-ins."""
+    """AI Director Agent: Analyzes transcript to select high-relevance visual cues and punch-ins with auto-fallback."""
     genai.configure(api_key=api_key, transport="rest")
-    model = genai.GenerativeModel("gemini-3.6-flash", generation_config={"response_mime_type": "application/json"})
 
     prompt = """
     You are an award-winning social video editor creating viral, engaging short-form videos (Reels, TikTok, Shorts, YouTube).
@@ -118,9 +135,21 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
     }
     Return ONLY valid JSON.
     """
-    response = model.generate_content([prompt, json.dumps(transcript_data)])
-    clean_json = response.text.strip().removeprefix("```json").removesuffix("```").strip()
-    return json.loads(clean_json)
+    last_err = None
+    for model_name in GEMINI_MODEL_CANDIDATES:
+        try:
+            print(f"Attempting editorial planning with model '{model_name}'...")
+            model = genai.GenerativeModel(model_name, generation_config={"response_mime_type": "application/json"})
+            response = model.generate_content([prompt, json.dumps(transcript_data)])
+            clean_json = response.text.strip().removeprefix("```json").removesuffix("```").strip()
+            data = json.loads(clean_json)
+            print(f"Editorial plan generated successfully using model '{model_name}'")
+            return data
+        except Exception as e:
+            last_err = e
+            print(f"Model '{model_name}' planning error: {e}. Falling back to next candidate...")
+            continue
+    raise last_err
 
 def fetch_pexels_photos(edit_plan: dict, pexels_key: str = DEFAULT_PEXELS_KEY, download_dir: str = "assets/b_roll") -> dict:
     """Downloads high-res Pexels stock photos for all visual cues in the plan."""

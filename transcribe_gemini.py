@@ -16,7 +16,7 @@ def transcribe_with_gemini(audio_path="temp_audio.wav", output_path="transcript_
     with open(audio_path, "rb") as f:
         audio_bytes = f.read()
 
-    model = genai.GenerativeModel("gemini-3.6-flash", generation_config={"response_mime_type": "application/json"})
+    model = genai.GenerativeModel("gemini-3.7-flash", generation_config={"response_mime_type": "application/json"})
     
     prompt = """
     Listen to this entire audio track carefully.

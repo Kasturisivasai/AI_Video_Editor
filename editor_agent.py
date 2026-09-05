@@ -58,9 +58,9 @@ def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
     Return ONLY valid JSON.
     """
 
-    # Using gemini-3.6-flash with structured JSON output
+    # Using gemini-3.7-flash with structured JSON output
     model = genai.GenerativeModel(
-        "gemini-3.6-flash",
+        "gemini-3.7-flash",
         generation_config={"response_mime_type": "application/json"}
     )
     

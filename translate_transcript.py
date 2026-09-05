@@ -24,7 +24,7 @@ def improve_translation(input_path="transcript.json", output_path="transcript_en
     Return ONLY a valid JSON array matching the exact input structure.
     """
 
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-3.7-flash")
     print("Sending Telugu transcript to Gemini for contextual translation...")
     
     response = None
