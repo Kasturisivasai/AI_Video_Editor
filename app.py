@@ -3,7 +3,7 @@ import re
 import tempfile
 import pandas as pd
 import streamlit as st
-from pipeline import run_pipeline, write_subtitles_srt, burn_subtitles_ffmpeg, DEFAULT_GEMINI_KEY, DEFAULT_PEXELS_KEY
+from pipeline import run_pipeline, write_subtitles_ass, write_subtitles_srt, burn_subtitles_ffmpeg, DEFAULT_GEMINI_KEY, DEFAULT_PEXELS_KEY
 
 # Configure Streamlit Page
 st.set_page_config(
@@ -105,13 +105,13 @@ with st.sidebar:
     st.info("🎨 **Style**: Animated Pop-in + Ken Burns Drift (Podcast/Reel Edition)")
     
     st.markdown("#### Subtitle Options")
-    margin_v = st.slider(
-        "Subtitle Bottom Offset (px)",
-        min_value=10,
-        max_value=80,
-        value=15,
-        step=5,
-        help="Adjusts vertical placement of the subtitles."
+    sub_margin_v = st.slider(
+        "Subtitle Vertical Position (px from bottom)",
+        min_value=15,
+        max_value=400,
+        value=320,
+        step=15,
+        help="320px anchors subtitles at the 60% mark (chest height). 15px anchors at the bottom."
     )
 
 # Main Hero Header
@@ -148,13 +148,21 @@ if uploaded_file is not None:
         
         # Check if already processed in this session
         if "processed_video" not in st.session_state or st.session_state.get("current_file") != uploaded_file.name:
-            st.info("Set any specific proper nouns or vocabulary hints below, then click to generate.")
+            st.info("Set any specific proper nouns or highlight pop-out words below, then click to generate.")
             
-            vocab_hints = st.text_input(
-                "📝 Name / Vocabulary Hints (Optional)",
-                placeholder="e.g. Dr. Hymavathi, Hyma Prasad, KIMS Hospitals",
-                help="Enter comma-separated proper nouns or medical/technical terms to ensure exact spelling in subtitles."
-            )
+            h_col1, h_col2 = st.columns(2)
+            with h_col1:
+                vocab_hints = st.text_input(
+                    "📝 Name / Vocabulary Hints (Optional)",
+                    placeholder="e.g. Dr. Hymavathi, Hyma Prasad, KIMS Hospitals",
+                    help="Enter comma-separated proper nouns to ensure exact spelling in subtitles."
+                )
+            with h_col2:
+                highlight_words = st.text_input(
+                    "🔥 Highlight Pop-Out Words (Optional)",
+                    placeholder="e.g. toxic, double, depression, money, salary",
+                    help="Words that will pop up as dynamic animated graphics above the subtitles when spoken."
+                )
             
             start_btn = st.button("✨ Auto-Edit Video with AI")
             
@@ -174,6 +182,8 @@ if uploaded_file is not None:
                             gemini_key=gemini_key,
                             pexels_key=pexels_key,
                             vocab_hints=vocab_hints,
+                            highlight_words=highlight_words,
+                            sub_margin_v=sub_margin_v,
                             progress_callback=update_progress
                         )
                         st.session_state["processed_video"] = final_path
@@ -253,9 +263,16 @@ if uploaded_file is not None:
                     if idx < len(segments):
                         segments[idx]["text"] = row["Subtitle Text"]
                 
-                # Write updated srt
-                updated_srt = "subtitles.srt"
-                write_subtitles_srt(st.session_state["transcript_data"], updated_srt)
+                # Write updated ASS with dynamic styling
+                updated_ass = "subtitles.ass"
+                cues = st.session_state.get("edit_plan", {}).get("visual_cues", [])
+                write_subtitles_ass(
+                    st.session_state["transcript_data"],
+                    ass_path=updated_ass,
+                    visual_cues=cues,
+                    mid_margin_v=sub_margin_v
+                )
+                write_subtitles_srt(st.session_state["transcript_data"], "subtitles.srt")
                 
                 # Fast re-burn using FFmpeg on temp_assembled.mp4
                 base_video = "temp_assembled.mp4" if os.path.exists("temp_assembled.mp4") else raw_video_path
@@ -263,9 +280,9 @@ if uploaded_file is not None:
                 
                 burn_subtitles_ffmpeg(
                     video_input_path=base_video,
-                    srt_path=updated_srt,
+                    sub_path=updated_ass,
                     video_output_path=target_output,
-                    margin_v=margin_v
+                    margin_v=sub_margin_v
                 )
                 st.session_state["processed_video"] = target_output
                 st.success("✨ Subtitles updated and re-burned into video in ~1.5 seconds!")

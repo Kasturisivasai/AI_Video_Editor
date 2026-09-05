@@ -178,37 +178,114 @@ def write_subtitles_srt(transcript_data: dict, srt_path: str = "subtitles.srt") 
             f.write(f"{idx + 1}\n{start} --> {end}\n{text}\n\n")
     return srt_path
 
+def format_ass_time(seconds: float) -> str:
+    """Formats seconds into ASS timestamp format H:MM:SS.cs"""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    cs = int(round((seconds - int(seconds)) * 100))
+    if cs >= 100:
+        cs = 99
+    return f"{hours}:{minutes:02d}:{secs:02d}.{cs:02d}"
+
+def write_subtitles_ass(
+    transcript_data: dict,
+    ass_path: str = "subtitles.ass",
+    video_w: int = 478,
+    video_h: int = 850,
+    visual_cues: list = None,
+    mid_margin_v: int = 320,
+    top_margin_v: int = 70
+) -> str:
+    """Generates an ASS subtitle file with dynamic Mid/Top styles avoiding card overlap."""
+    if visual_cues is None:
+        visual_cues = []
+
+    # Map intervals where a BOTTOM card is active (odd index cues)
+    bottom_cue_intervals = []
+    for idx, cue in enumerate(visual_cues):
+        if idx % 2 == 1:
+            bottom_cue_intervals.append((float(cue.get("start", 0)), float(cue.get("end", 0))))
+
+    font_size = max(16, int(video_w * 0.044)) # ~21px on 478w
+    
+    header = f"""[Script Info]
+ScriptType: v4.00+
+PlayResX: {video_w}
+PlayResY: {video_h}
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Mid,Arial Black,{font_size},&H00FFFFFF,&H000000FF,&H00000000,&H90000000,-1,0,0,0,100,100,0,0,1,3,1.5,2,20,20,{mid_margin_v},1
+Style: Top,Arial Black,{font_size},&H00FFFFFF,&H000000FF,&H00000000,&H90000000,-1,0,0,0,100,100,0,0,1,3,1.5,8,20,20,{top_margin_v},1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+"""
+    events = []
+    for seg in transcript_data.get("segments", []):
+        start_sec = float(seg["start"])
+        end_sec = float(seg["end"])
+        start_str = format_ass_time(start_sec)
+        end_str = format_ass_time(end_sec)
+        text = seg["text"].strip()
+        
+        # Check if this segment overlaps with a bottom-placed card
+        is_bottom_card_active = any(
+            not (end_sec <= b_start or start_sec >= b_end)
+            for b_start, b_end in bottom_cue_intervals
+        )
+        
+        style = "Top" if is_bottom_card_active else "Mid"
+        events.append(f"Dialogue: 0,{start_str},{end_str},{style},,0,0,0,,{text}")
+
+    with open(ass_path, "w", encoding="utf-8") as f:
+        f.write(header + "\n".join(events) + "\n")
+        
+    return ass_path
+
 def burn_subtitles_ffmpeg(
     video_input_path: str,
-    srt_path: str,
+    sub_path: str,
     video_output_path: str,
-    margin_v: int = 15
+    margin_v: int = 320,
+    video_w: int = 478,
+    video_h: int = 850
 ) -> str:
     """Fast subtitle burning using FFmpeg directly (takes ~1-2 seconds, zero video re-encoding required)."""
     ffmpeg = get_ffmpeg_exe()
-    style_opts = (
-        "FontName=Arial,"
-        "FontSize=12,"
-        "Bold=1,"
-        "PrimaryColour=&H00FFFFFF,"
-        "OutlineColour=&H90000000,"
-        "BorderStyle=3,"
-        "Outline=2,"
-        "Shadow=0,"
-        "Alignment=2,"
-        f"MarginV={margin_v}"
-    )
-    safe_srt = srt_path.replace("\\", "/")
+    safe_sub = sub_path.replace("\\", "/")
+    
+    if sub_path.lower().endswith(".ass"):
+        vf_arg = f"subtitles='{safe_sub}'"
+    else:
+        font_size = max(16, int(video_w * 0.044))
+        style_opts = (
+            f"PlayResX={video_w},"
+            f"PlayResY={video_h},"
+            "FontName=Arial Black,"
+            f"FontSize={font_size},"
+            "Bold=1,"
+            "PrimaryColour=&H00FFFFFF,"
+            "OutlineColour=&H00000000,"
+            "BorderStyle=1,"
+            "Outline=3,"
+            "Shadow=1.5,"
+            "Alignment=2,"
+            f"MarginV={margin_v}"
+        )
+        vf_arg = f"subtitles='{safe_sub}':force_style='{style_opts}'"
+
     cmd = [
         ffmpeg, "-y", "-i", video_input_path,
-        "-vf", f"subtitles='{safe_srt}':force_style='{style_opts}'",
+        "-vf", vf_arg,
         "-c:a", "copy", video_output_path
     ]
     subprocess.run(cmd, check=True)
     return video_output_path
 
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 def create_card_pil(img_path, target_w=340, target_h=190, radius=18):
     """Creates a sleek, high-production photo card with rounded corners, white border, and soft drop shadow."""
@@ -257,11 +334,15 @@ def create_card_pil(img_path, target_w=340, target_h=190, radius=18):
     canvas.paste(im, (pad, pad), mask)
     return canvas
 
-def make_animated_card_clip(img_path, duration, video_w, video_h):
-    """Builds a MoviePy clip with pop-in zoom entry, Ken Burns drift, and safe upper framing."""
+def make_animated_card_clip(img_path, duration, video_w, video_h, position="top"):
+    """Builds a MoviePy clip with pop-in zoom entry, Ken Burns drift, and safe upper/lower framing."""
     target_w = int(video_w * 0.72)
     target_h = int(target_w * 0.5625)
-    y_center = int(video_h * 0.17)
+    
+    if position == "bottom":
+        y_center = int(video_h * 0.78)
+    else:
+        y_center = int(video_h * 0.17)
     
     card_pil = create_card_pil(img_path, target_w, target_h)
     base_w, base_h = card_pil.size
@@ -289,21 +370,94 @@ def make_animated_card_clip(img_path, duration, video_w, video_h):
         pass
     return animated
 
+def create_keyword_badge_pil(word: str, video_w: int = 478) -> Image.Image:
+    """Creates a sleek, punchy keyword pop-out badge."""
+    clean_word = word.strip().upper()
+    font_size = max(16, int(video_w * 0.040))
+    try:
+        font = ImageFont.truetype("C:/Windows/Fonts/ariblk.ttf", font_size)
+    except Exception:
+        font = ImageFont.load_default()
+        
+    dummy = Image.new("RGBA", (1, 1))
+    draw_d = ImageDraw.Draw(dummy)
+    bbox = draw_d.textbbox((0, 0), clean_word, font=font)
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+    
+    pad_x = 22
+    pad_y = 9
+    badge_w = text_w + pad_x * 2
+    badge_h = text_h + pad_y * 2
+    
+    badge = Image.new("RGBA", (badge_w + 12, badge_h + 12), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(badge)
+    
+    shadow_box = [(6, 8), (badge_w + 6, badge_h + 8)]
+    draw.rounded_rectangle(shadow_box, radius=12, fill=(0, 0, 0, 140))
+    badge = badge.filter(ImageFilter.GaussianBlur(3))
+    
+    draw = ImageDraw.Draw(badge)
+    pill_box = [(6, 6), (badge_w + 6, badge_h + 6)]
+    draw.rounded_rectangle(pill_box, radius=12, fill=(18, 20, 24, 235), outline=(255, 225, 0, 255), width=2)
+    
+    tx = 6 + pad_x
+    ty = 6 + pad_y - 2
+    draw.text((tx, ty), clean_word, font=font, fill=(255, 230, 0, 255))
+    return badge
+
+def make_keyword_popout_clip(word: str, start: float, duration: float, video_w: int, video_h: int, y_pos: int = None):
+    """Generates an animated pop-out badge clip that springs in when the keyword is spoken."""
+    if y_pos is None:
+        y_pos = int(video_h * 0.54) # sits right above the 60% subtitle line
+        
+    badge_pil = create_keyword_badge_pil(word, video_w)
+    base_w, base_h = badge_pil.size
+    badge_np = np.array(badge_pil)
+    
+    clip = ImageClip(badge_np, ismask=False).set_duration(duration).set_start(start)
+    
+    def scale_fn(t):
+        if t < 0.22:
+            p = t / 0.22
+            return 0.65 + 0.35 * (1.0 - (1.0 - p)**3)
+        elif t > duration - 0.20:
+            p = (duration - t) / 0.20
+            return max(0.6, p)
+        else:
+            return 1.0
+            
+    def pos_fn(t):
+        s = scale_fn(t)
+        cw = base_w * s
+        ch = base_h * s
+        return ((video_w - cw) / 2, y_pos - ch / 2)
+        
+    animated = clip.resize(scale_fn).set_position(pos_fn)
+    try:
+        animated = animated.crossfadein(0.12).crossfadeout(0.18)
+    except Exception:
+        pass
+    return animated
+
 def assemble_final_video(
     raw_video_path: str,
     edit_plan: dict,
-    srt_path: str,
+    sub_path: str,
     output_path: str = "final_edited_video.mp4",
-    margin_v: int = 15
+    transcript_data: dict = None,
+    highlight_words: str = "",
+    sub_margin_v: int = 320
 ) -> str:
-    """Composites raw video with animated photo cards and burns modern desk-aligned subtitles."""
+    """Composites raw video with alternating animated photo cards, keyword pop-outs, and burns modern subtitles."""
     main_clip = VideoFileClip(raw_video_path)
     combined = main_clip
 
     visual_cues = edit_plan.get("visual_cues") or edit_plan.get("b_roll_cues") or []
     overlays = [combined]
 
-    for cue in visual_cues:
+    # Layer Alternating Photo Cards (Even = Top header, Odd = Lower desk)
+    for idx, cue in enumerate(visual_cues):
         local_path = cue.get("local_file")
         start = float(cue.get("start", 0))
         end = float(cue.get("end", 0))
@@ -311,8 +465,11 @@ def assemble_final_video(
 
         if local_path and os.path.exists(local_path) and duration > 0:
             is_image = local_path.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
+            card_position = "bottom" if idx % 2 == 1 else "top"
+            print(f"Overlaying Animated Photo Card '{cue.get('search_keyword')}' ({card_position}) at {start:.2f}s - {(start + duration):.2f}s...")
+            
             if is_image:
-                card_clip = make_animated_card_clip(local_path, duration, combined.w, combined.h)
+                card_clip = make_animated_card_clip(local_path, duration, combined.w, combined.h, position=card_position)
                 card_clip = card_clip.set_start(start)
                 overlays.append(card_clip)
             else:
@@ -329,6 +486,40 @@ def assemble_final_video(
                 asset_clip = asset_clip.set_position("center").set_start(start)
                 overlays.append(asset_clip)
 
+    # Layer Keyword Pop-Out Badges (When spoken words match user or AI keywords)
+    words_list = [w.strip().lower() for w in highlight_words.split(",") if w.strip()]
+    if transcript_data:
+        for seg in transcript_data.get("segments", []):
+            text_lower = seg.get("text", "").lower()
+            start_t = float(seg.get("start", 0))
+            end_t = float(seg.get("end", 0))
+            dur = end_t - start_t
+            if dur > 0.4:
+                matched_word = None
+                for w in words_list:
+                    if w in text_lower:
+                        matched_word = w.upper()
+                        break
+                        
+                if not matched_word:
+                    for pi in edit_plan.get("punch_ins", []):
+                        if abs(pi.get("start", 0) - start_t) < 1.5:
+                            candidate_words = [cw for cw in re.sub(r"[^\w\s]", "", seg["text"]).split() if len(cw) > 3]
+                            if candidate_words:
+                                matched_word = candidate_words[0].upper()
+                            break
+
+                if matched_word:
+                    badge_clip = make_keyword_popout_clip(
+                        matched_word,
+                        start=start_t,
+                        duration=min(dur, 2.5),
+                        video_w=combined.w,
+                        video_h=combined.h,
+                        y_pos=int(combined.h * 0.54)
+                    )
+                    overlays.append(badge_clip)
+
     final_render = CompositeVideoClip(overlays)
     temp_output = "temp_assembled.mp4"
     final_render.write_videofile(
@@ -344,26 +535,14 @@ def assemble_final_video(
     main_clip.close()
 
     # Burn subtitles with FFmpeg
-    ffmpeg = get_ffmpeg_exe()
-    style_opts = (
-        "FontName=Arial,"
-        "FontSize=12,"
-        "Bold=1,"
-        "PrimaryColour=&H00FFFFFF,"
-        "OutlineColour=&H90000000,"
-        "BorderStyle=3,"
-        "Outline=2,"
-        "Shadow=0,"
-        "Alignment=2,"
-        f"MarginV={margin_v}"
+    burn_subtitles_ffmpeg(
+        video_input_path=temp_output,
+        sub_path=sub_path,
+        video_output_path=output_path,
+        margin_v=sub_margin_v,
+        video_w=combined.w,
+        video_h=combined.h
     )
-    safe_srt = srt_path.replace("\\", "/")
-    cmd = [
-        ffmpeg, "-y", "-i", temp_output,
-        "-vf", f"subtitles='{safe_srt}':force_style='{style_opts}'",
-        "-c:a", "copy", output_path
-    ]
-    subprocess.run(cmd, check=True)
 
     # Cleanup temp sound files, keep temp_assembled.mp4 for instant subtitle re-burns
     for temp_f in ["temp_assembledTEMP_MPY_wvf_snd.mp4"]:
@@ -381,6 +560,8 @@ def run_pipeline(
     gemini_key: str = DEFAULT_GEMINI_KEY,
     pexels_key: str = DEFAULT_PEXELS_KEY,
     vocab_hints: str = "",
+    highlight_words: str = "",
+    sub_margin_v: int = 320,
     progress_callback = None
 ):
     """End-to-end processing pipeline with progress updates."""
@@ -411,15 +592,34 @@ def run_pipeline(
         json.dump(updated_plan, f, indent=2)
 
     # Stage 4: Subtitles & Video Assembly (75-100%)
-    notify(75, "Generating synchronized single-line subtitle track...")
-    srt_path = write_subtitles_srt(transcript_data, "subtitles.srt")
+    notify(75, "Generating synchronized ASS subtitle track with dynamic 60% placement...")
+    cues = updated_plan.get("visual_cues") or updated_plan.get("b_roll_cues") or []
+    
+    # Get video dimensions
+    probe_clip = VideoFileClip(raw_video_path)
+    vid_w, vid_h = probe_clip.w, probe_clip.h
+    probe_clip.close()
+    
+    ass_path = write_subtitles_ass(
+        transcript_data,
+        ass_path="subtitles.ass",
+        video_w=vid_w,
+        video_h=vid_h,
+        visual_cues=cues,
+        mid_margin_v=sub_margin_v
+    )
+    # Also write standard srt for fallback
+    write_subtitles_srt(transcript_data, "subtitles.srt")
 
-    notify(85, "Rendering animated photo cards and burning subtitles...")
+    notify(85, "Rendering animated cards, keyword pop-outs & burning subtitles...")
     final_video = assemble_final_video(
         raw_video_path,
         updated_plan,
-        srt_path,
-        output_path=output_path
+        ass_path,
+        output_path=output_path,
+        transcript_data=transcript_data,
+        highlight_words=highlight_words,
+        sub_margin_v=sub_margin_v
     )
 
     notify(100, "Video editing complete!")
