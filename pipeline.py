@@ -1121,7 +1121,9 @@ def assemble_final_video(
                     fs_clip = fs_clip.set_start(start)
                     overlays.append(fs_clip)
 
-    final_render = CompositeVideoClip(overlays, size=(combined.w, combined.h), use_bgclip=True).set_duration(total_duration)
+    final_render = CompositeVideoClip(overlays, size=(combined.w, combined.h)).set_duration(total_duration)
+    if main_clip.audio is not None:
+        final_render.audio = main_clip.audio.set_duration(total_duration)
     temp_output = "temp_assembled.mp4"
     final_render.write_videofile(
         temp_output,
