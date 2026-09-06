@@ -98,25 +98,32 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, 
     raise last_err
 
 def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMINI_KEY) -> dict:
-    """AI Director Agent: Analyzes transcript to select high-relevance visual cues and punch-ins with auto-fallback."""
+    """AI Director Agent: Analyzes transcript to select 8-9 high-relevance visual cues and 1-2 word power punch callouts with auto-fallback."""
     genai.configure(api_key=api_key, transport="rest")
 
     prompt = """
-    You are an award-winning social video editor creating viral, engaging short-form videos (Reels, TikTok, Shorts, YouTube).
+    You are an award-winning short-form video director creating viral, broadcast-quality Reels, TikToks, and Shorts.
     Analyze the provided timestamped transcript and return a strict JSON editing blueprint.
     
     YOUR EDITING STRATEGY:
     1. HOOK DETECTION:
        - Identify if there is a compelling, high-energy sentence or curiosity gap within the video that should serve as an upfront teaser hook (3 to 6 seconds max).
        - If the video already starts with a strong, natural opening, set "hook_segment": null.
-    2. VISUAL ASSETS (2D Vector Illustrations & Symbolic Icons):
-       - Instead of traditional live-action cinematic stock footage or generic photos, specifically select contextual 2D vector illustrations, minimalist line art, and symbolic icons (e.g., "2d vector illustration of a weighing scale", "medical silhouette graphic", "stress brain icon animation", "symbolic line art of rejection letter", "minimalist icon of broken heart").
-       - Each asset must act as a clean, iconic visual aid tightly synchronized to appear as the speaker introduces each key concept or numbered point.
-       - Always output English keywords for "search_keyword" optimized for vector/illustration searches (e.g. "2d vector illustration of...", "minimalist icon graphic of...").
-       - Keep each visual appearance between 3.0 and 4.2 seconds. Space them out naturally across the timeline.
-    3. DYNAMIC TEXT CARDS & PUNCH-INS:
-       - Identify high-retention listicle points or conceptual punchlines to emphasize (1 to 2 seconds).
-       - CRITICAL RULE: NEVER select speaker names, greetings, or self-introductions (e.g., 'Dr. Hema', 'I am...', 'My name is...', 'Psychologist'). Punch words must ONLY be punchy, thematic high-impact concepts (e.g., 'POOR COMMUNICATION', 'FEAR OF ENGLISH', 'REJECTED', 'JOB INTERVIEW', 'CONFIDENCE BLOCK').
+    
+    2. VISUAL AND B-ROLL OVERLAYS (High-Quality Stock Imagery / Video):
+       - GENERATE EXACTLY 8 TO 9 VISUAL CUES distributed evenly across the video timeline (approx every 8 to 12 seconds).
+       - Each asset must tightly synchronize to appear as the speaker introduces a key symptom, concept, workplace situation, or numbered point.
+       - SEARCH KEYWORDS: Write clean, evocative, high-resolution stock photography and video search terms (e.g. "stressed businessman headache office", "insomnia alarm clock dark bedroom", "exhausted doctor burnout moody lighting", "stomach pain gastritis healthy diet", "professional counseling therapy session", "employee burnout laptop desk").
+       - DO NOT write "2d vector illustration" or "icon graphic" in search keywords, as stock libraries return low-resolution clipart. Use realistic, cinematic stock photography/video search terms.
+       - Keep each visual appearance between 3.0 and 4.0 seconds.
+    
+    3. DYNAMIC CENTER PUNCH CALLOUTS (High-Impact Power Words):
+       - Identify 5 to 7 high-impact power words or punch concepts across the timeline (1.5 to 2.2 seconds each).
+       - STRICT RULES FOR CALLOUT WORDS:
+         * EXACTLY 1 TO 2 WORDS MAXIMUM.
+         * MUST be core thematic concepts, strong emotions, or critical terms (e.g., 'BURNOUT', 'INSOMNIA', 'JOB STRESS', 'GASTRITIS', 'DEPRESSION', 'REJECTION', 'POOR SALARY', 'ANXIETY', 'COMMUNICATION').
+         * NEVER select grammatical filler words, auxiliary verbs, prepositions, or pronouns (STRICTLY FORBIDDEN: 'THEY MUST', 'FOR GIVING', 'LEARN YOUR', 'WE ARE', 'CAN BE', 'IN THE', 'SO THAT', 'IT IS', 'BECAUSE OF', 'ABOUT THIS').
+         * NEVER select speaker names, greetings, or self-introductions (STRICTLY FORBIDDEN: 'HEMA', 'HYMA PRASAD', 'DOCTOR', 'PSYCHOLOGIST', 'MYSELF').
     
     STRICT JSON OUTPUT SCHEMA:
     {
@@ -125,13 +132,19 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
         {
           "start": float,
           "end": float,
-          "search_keyword": "high-relevance 2d vector illustration or icon search term",
-          "asset_type": "illustration",
-          "reason": "Brief contextual rationale"
+          "search_keyword": "clean high-resolution stock photo/video search query (e.g. stressed executive headache desk)",
+          "asset_type": "photo",
+          "display_mode": "fullscreen",
+          "reason": "Contextual rationale"
         }
       ],
       "punch_ins": [
-        {"start": float, "end": float, "reason": "High-impact thematic concept (never speaker names/intros)"}
+        {
+          "start": float,
+          "end": float,
+          "callout_text": "EXACT 1-2 POWER WORDS (e.g. 'BURNOUT', 'INSOMNIA')",
+          "reason": "Why this concept hits hard"
+        }
       ]
     }
     Return ONLY valid JSON.
@@ -144,7 +157,7 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
             response = model.generate_content([prompt, json.dumps(transcript_data)])
             clean_json = response.text.strip().removeprefix("```json").removesuffix("```").strip()
             data = json.loads(clean_json)
-            print(f"Editorial plan generated successfully using model '{model_name}'")
+            print(f"Editorial plan generated successfully using model '{model_name}' ({len(data.get('visual_cues', []))} visual cues, {len(data.get('punch_ins', []))} punch callouts)")
             return data
         except Exception as e:
             last_err = e
@@ -170,19 +183,30 @@ ASS_COLOR_MAP = {
     "Red + Gold": "red_gold"
 }
 
+def clean_search_keyword(kw: str) -> str:
+    """Strips out clipart/illustration boilerplate prefixes to get pristine photographic/video queries."""
+    cleaned = re.sub(
+        r"^(2d vector illustration of|minimalist icon graphic of|symbolic line art of|vector illustration of|minimalist icon of|illustration of|icon graphic of|icon of|graphic of|a photo of|photo of|picture of)\s+",
+        "",
+        kw.strip(),
+        flags=re.IGNORECASE
+    ).strip()
+    return cleaned if cleaned else kw.strip()
+
 def fetch_pexels_assets(
     edit_plan: dict,
     pexels_key: str = DEFAULT_PEXELS_KEY,
     download_dir: str = "assets/b_roll",
     default_asset_type: str = None
 ) -> dict:
-    """Downloads high-res Pexels stock photos or vertical video clips for visual cues."""
+    """Downloads pristine, high-res 1080x1920 Pexels stock photos or vertical video clips for visual cues."""
     os.makedirs(download_dir, exist_ok=True)
     cues = edit_plan.get("visual_cues") or edit_plan.get("b_roll_cues") or []
     headers = {"Authorization": pexels_key}
 
     for idx, cue in enumerate(cues):
-        keyword = cue.get("search_keyword", "abstract").strip()
+        raw_keyword = cue.get("search_keyword", "abstract").strip()
+        keyword = clean_search_keyword(raw_keyword)
         asset_type = cue.get("asset_type") or default_asset_type or "photo"
         slug = re.sub(r"[^\w]", "_", keyword.lower())[:25]
         
@@ -224,21 +248,25 @@ def fetch_pexels_assets(
                     # Fallback to photo if no video found
                     asset_type = "photo"
 
-        # Photo/illustration asset search
+        # Photo asset search (Pristine 1080x1920 high resolution)
         if asset_type != "video":
             dest_path = os.path.join(download_dir, f"asset_{idx}_{slug}.jpg")
             if not os.path.exists(dest_path) or os.path.getsize(dest_path) < 1000:
                 for term in search_terms:
-                    url = f"https://api.pexels.com/v1/search?query={term}&per_page=1"
+                    url = f"https://api.pexels.com/v1/search?query={term}&per_page=3&orientation=portrait"
                     try:
                         r = requests.get(url, headers=headers, timeout=10)
                         if r.status_code == 200:
                             photos = r.json().get("photos", [])
                             if photos:
                                 src = photos[0].get("src", {})
-                                img_url = src.get("large2x") or src.get("portrait") or src.get("large") or src.get("original")
+                                orig = src.get("original")
+                                if orig:
+                                    img_url = f"{orig}?auto=compress&cs=tinysrgb&fit=crop&w=1080&h=1920"
+                                else:
+                                    img_url = src.get("large2x") or src.get("large")
                                 if img_url:
-                                    img_data = requests.get(img_url, timeout=15).content
+                                    img_data = requests.get(img_url, timeout=20).content
                                     with open(dest_path, "wb") as f:
                                         f.write(img_data)
                                     break
@@ -304,9 +332,38 @@ def format_callout_ass_text(text: str, color_mode: str = "white") -> str:
     hex_code = ASS_COLOR_MAP.get(color_mode, ASS_COLOR_MAP.get(cm_lower, "&H00FFFFFF"))
     return rf"{{\c{hex_code}&}}{' '.join(words)}"
 
+CALLOUT_STOP_WORDS = {
+    "they", "must", "for", "giving", "given", "give", "learn", "your", "yours",
+    "we", "our", "ours", "us", "you", "i", "me", "my", "he", "she", "it", "its",
+    "the", "a", "an", "and", "or", "but", "so", "as", "at", "by", "in", "on", "to",
+    "from", "with", "into", "onto", "over", "after", "before", "between", "through",
+    "during", "above", "below", "of", "about", "against", "among", "can", "could",
+    "will", "would", "shall", "should", "may", "might", "have", "has", "had", "having",
+    "do", "does", "did", "doing", "is", "are", "was", "were", "be", "been", "being",
+    "that", "this", "these", "those", "what", "which", "who", "whom", "whose", "where",
+    "when", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other",
+    "some", "such", "no", "nor", "not", "only", "own", "same", "than", "too", "very",
+    "just", "now", "then", "like", "get", "getting", "got", "know", "knowing", "say",
+    "saying", "said", "tell", "telling", "told", "make", "making", "made", "take", "taking",
+    "them", "their", "theirs", "well", "much", "many", "even", "also", "still", "here",
+    "let", "letting", "come", "coming", "go", "going", "see", "seeing", "saw", "seen",
+    "stay", "staying", "stayed", "feel", "feeling", "felt", "think", "thinking", "thought"
+}
+
+def clean_callout_phrase(phrase: str) -> str:
+    """Cleans a callout candidate, strictly stripping stop words, punctuation, and filler."""
+    words = [w for w in re.sub(r"[^\w\s]", "", phrase).split() if len(w) > 1]
+    # Filter out stop words and intro blocklist
+    content_words = [w for w in words if w.lower() not in CALLOUT_STOP_WORDS and w.lower() not in NAME_INTRO_BLOCKLIST]
+    if not content_words:
+        return ""
+    # Max 2 words
+    return " ".join(content_words[:2]).upper()
+
 def extract_curated_punch_callouts(edit_plan: dict, transcript_data: dict, highlight_words: str = "") -> list:
     """
-    Extracts high-impact thematic punch callouts while strictly filtering out names and speaker introductions.
+    Extracts curated high-impact thematic punch callouts strictly filtering out filler words,
+    stop words ('THEY MUST', 'FOR GIVING', 'LEARN YOUR'), and speaker introductions.
     Returns a list of dicts: [{'start': float, 'end': float, 'text': str, 'color': 'white', 'enabled': bool}]
     """
     callouts = []
@@ -325,32 +382,48 @@ def extract_curated_punch_callouts(edit_plan: dict, transcript_data: dict, highl
 
         for hw in hl_list:
             if hw in text_lower:
-                callouts.append({
-                    "start": round(start_t, 2),
-                    "end": round(min(start_t + 2.2, end_t), 2),
-                    "text": hw.upper(),
-                    "color": "white",
-                    "enabled": True
-                })
-                break
+                clean_hw = clean_callout_phrase(hw)
+                if clean_hw and len(clean_hw) >= 3:
+                    callouts.append({
+                        "start": round(start_t, 2),
+                        "end": round(min(start_t + 2.0, end_t), 2),
+                        "text": clean_hw,
+                        "color": "white",
+                        "enabled": True
+                    })
+                    break
 
-    # 2. AI Editorial punch-ins (strictly filtering speaker names/intros)
+    # 2. AI Editorial punch-ins
     punch_ins = edit_plan.get("punch_ins", []) if edit_plan else []
     for pi in punch_ins:
         pi_start = float(pi.get("start", 0))
+        raw_candidate = pi.get("callout_text") or pi.get("keyword") or pi.get("reason", "")
+        clean_cand = clean_callout_phrase(raw_candidate)
+        
+        # If candidate has valid content words
+        if clean_cand and len(clean_cand) >= 3:
+            if not any(abs(c["start"] - pi_start) < 2.0 for c in callouts):
+                callouts.append({
+                    "start": round(pi_start, 2),
+                    "end": round(pi_start + 2.0, 2),
+                    "text": clean_cand,
+                    "color": "white",
+                    "enabled": True
+                })
+                continue
+                
+        # Fallback: scan nearby segment for strong content nouns/verbs ONLY
         for seg in segments:
             seg_start = float(seg.get("start", 0))
             seg_end = float(seg.get("end", 0))
             if abs(pi_start - seg_start) < 1.5:
-                clean_words = [cw for cw in re.sub(r"[^\w\s]", "", seg.get("text", "")).split() if len(cw) > 2]
-                filtered = [w for w in clean_words if w.lower() not in NAME_INTRO_BLOCKLIST]
-                if filtered:
-                    phrase = " ".join(filtered[:2]).upper()
+                clean_seg_phrase = clean_callout_phrase(seg.get("text", ""))
+                if clean_seg_phrase and len(clean_seg_phrase) >= 3:
                     if not any(abs(c["start"] - seg_start) < 2.0 for c in callouts):
                         callouts.append({
                             "start": round(seg_start, 2),
-                            "end": round(min(seg_start + 2.2, seg_end), 2),
-                            "text": phrase,
+                            "end": round(min(seg_start + 2.0, seg_end), 2),
+                            "text": clean_seg_phrase,
                             "color": "white",
                             "enabled": True
                         })
@@ -676,13 +749,16 @@ def make_reel_kinetic_word_clip(text: str, start: float, duration: float, video_
 def make_fullscreen_broll_clip(asset_path: str, duration: float, video_w: int, video_h: int):
     """
     Builds a full-screen vertical 9:16 motion B-roll clip.
-    - If image: crops & scales to 9:16, applies smooth Ken Burns zoom (1.0 -> 1.08),
-      and soft crossfades at start and end.
+    - If image: crops & scales oversized by 12% to prevent edge clipping, applies smooth Ken Burns zoom,
+      and soft alpha crossfades directly over the main video (no black background flash).
     - If video: loops/trims to duration, center crops to 9:16, strips audio, and adds soft crossfades.
     """
     is_image = asset_path.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
     if is_image:
         im = Image.open(asset_path).convert('RGB')
+        oversize_w = int(video_w * 1.12)
+        oversize_h = int(video_h * 1.12)
+        
         target_aspect = video_w / video_h
         im_aspect = im.width / im.height
         if im_aspect > target_aspect:
@@ -693,27 +769,26 @@ def make_fullscreen_broll_clip(asset_path: str, duration: float, video_w: int, v
             new_h = int(im.width / target_aspect)
             top = (im.height - new_h) // 2
             im = im.crop((0, top, im.width, top + new_h))
-        im = im.resize((video_w, video_h), Image.Resampling.LANCZOS)
+        im = im.resize((oversize_w, oversize_h), Image.Resampling.LANCZOS)
         
         base_np = np.array(im)
         clip = ImageClip(base_np).set_duration(duration)
         
         def zoom_scale(t):
-            return 1.0 + 0.08 * (t / max(0.1, duration))
+            return 1.0 + 0.05 * (t / max(0.1, duration))
             
         def center_pos(t):
             s = zoom_scale(t)
-            cur_w = video_w * s
-            cur_h = video_h * s
+            cur_w = oversize_w * s
+            cur_h = oversize_h * s
             return ((video_w - cur_w) / 2, (video_h - cur_h) / 2)
             
         animated = clip.resize(zoom_scale).set_position(center_pos)
         try:
-            animated = animated.crossfadein(0.18).crossfadeout(0.18)
+            animated = animated.crossfadein(0.22).crossfadeout(0.25)
         except Exception:
             pass
-        base = ColorClip(size=(video_w, video_h), color=(0, 0, 0)).set_duration(duration)
-        return CompositeVideoClip([base, animated], size=(video_w, video_h))
+        return animated
     else:
         # Video asset
         v_clip = VideoFileClip(asset_path).without_audio()
@@ -732,7 +807,7 @@ def make_fullscreen_broll_clip(asset_path: str, duration: float, video_w: int, v
             
         v_clip = crop(v_clip, x_center=v_clip.w / 2, y_center=v_clip.h / 2, width=video_w, height=video_h)
         try:
-            v_clip = v_clip.crossfadein(0.18).crossfadeout(0.18)
+            v_clip = v_clip.crossfadein(0.22).crossfadeout(0.25)
         except Exception:
             pass
         return v_clip

@@ -32,23 +32,28 @@ def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
         transcript_data = json.load(f)
 
     prompt = """
-    You are an elite short-form video director crafting viral, high-retention Reels, TikToks, and Shorts.
-    This reference reel utilizes a high-retention listicle format, heavy outlined typography, and custom graphical illustrations instead of traditional cinematic stock footage.
+    You are an award-winning short-form video director creating viral, broadcast-quality Reels, TikToks, and Shorts.
     Analyze the provided timestamped transcript and return a strict JSON editing blueprint.
 
     YOUR EDITING STRATEGY:
     1. HOOK DETECTION:
        - Identify if there is a compelling, high-energy sentence or curiosity gap within the video that should serve as an upfront teaser hook (3 to 6 seconds max).
        - If the video already starts with a strong, natural opening, set "hook_segment": null.
-    2. VISUAL AND GRAPHICAL OVERLAYS (Iconographic B-Roll):
-       - Instead of traditional live-action stock video or generic photos, specifically select contextual 2D vector illustrations, minimalist line art, and symbolic icons.
-       - Examples: "2d vector illustration of a weighing scale", "medical silhouette graphic", "stress brain icon animation", "symbolic line art of rejection letter", "minimalist icon graphic of corporate hierarchy", "gold weighing scale illustration".
-       - Each asset must be tightly synchronized to appear instantly as the speaker transitions to each key concept or numbered point.
-       - Always output English keywords for "search_keyword" optimized for vector/illustration/graphic queries.
-       - Keep each visual appearance between 3.0 and 4.2 seconds.
-    3. DYNAMIC TEXT CARDS & PUNCH-INS:
-       - Identify high-retention listicle points or thematic concepts to pop up centrally on screen (1 to 2 seconds).
-       - CRITICAL RULE: NEVER select speaker names, greetings, or self-introductions (e.g., 'Dr. Hema', 'I am...', 'My name is...', 'Psychologist'). Punch words must ONLY be punchy, thematic high-impact concepts (e.g., 'POOR COMMUNICATION', 'FEAR OF ENGLISH', 'REJECTED', 'JOB INTERVIEW', 'CONFIDENCE BLOCK').
+
+    2. VISUAL AND B-ROLL OVERLAYS (High-Quality Stock Imagery / Video):
+       - GENERATE EXACTLY 8 TO 9 VISUAL CUES distributed evenly across the video timeline (approx every 8 to 12 seconds).
+       - Each asset must tightly synchronize to appear as the speaker introduces a key symptom, concept, workplace situation, or numbered point.
+       - SEARCH KEYWORDS: Write clean, evocative, high-resolution stock photography and video search terms (e.g. "stressed businessman headache office", "insomnia alarm clock dark bedroom", "exhausted doctor burnout moody lighting", "stomach pain gastritis healthy diet", "professional counseling therapy session", "employee burnout laptop desk").
+       - DO NOT write "2d vector illustration" or "icon graphic" in search keywords, as stock libraries return low-resolution clipart. Use realistic, cinematic stock photography/video search terms.
+       - Keep each visual appearance between 3.0 and 4.0 seconds.
+
+    3. DYNAMIC CENTER PUNCH CALLOUTS (High-Impact Power Words):
+       - Identify 5 to 7 high-impact power words or punch concepts across the timeline (1.5 to 2.2 seconds each).
+       - STRICT RULES FOR CALLOUT WORDS:
+         * EXACTLY 1 TO 2 WORDS MAXIMUM.
+         * MUST be core thematic concepts, strong emotions, or critical terms (e.g., 'BURNOUT', 'INSOMNIA', 'JOB STRESS', 'GASTRITIS', 'DEPRESSION', 'REJECTION', 'POOR SALARY', 'ANXIETY', 'COMMUNICATION').
+         * NEVER select grammatical filler words, auxiliary verbs, prepositions, or pronouns (STRICTLY FORBIDDEN: 'THEY MUST', 'FOR GIVING', 'LEARN YOUR', 'WE ARE', 'CAN BE', 'IN THE', 'SO THAT', 'IT IS', 'BECAUSE OF', 'ABOUT THIS').
+         * NEVER select speaker names, greetings, or self-introductions (STRICTLY FORBIDDEN: 'HEMA', 'HYMA PRASAD', 'DOCTOR', 'PSYCHOLOGIST', 'MYSELF').
 
     STRICT JSON OUTPUT SCHEMA:
     {
@@ -57,13 +62,19 @@ def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
         {
           "start": float,
           "end": float,
-          "search_keyword": "high-relevance 2d vector illustration or icon search term",
-          "asset_type": "illustration",
-          "reason": "Brief contextual rationale"
+          "search_keyword": "clean high-resolution stock photo/video search query (e.g. stressed executive headache desk)",
+          "asset_type": "photo",
+          "display_mode": "fullscreen",
+          "reason": "Contextual rationale"
         }
       ],
       "punch_ins": [
-        {"start": float, "end": float, "reason": "High-impact thematic concept (never speaker names/intros)"}
+        {
+          "start": float,
+          "end": float,
+          "callout_text": "EXACT 1-2 POWER WORDS (e.g. 'BURNOUT', 'INSOMNIA')",
+          "reason": "Why this concept hits hard"
+        }
       ]
     }
     Return ONLY valid JSON.
