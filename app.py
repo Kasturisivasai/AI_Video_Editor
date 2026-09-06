@@ -3,7 +3,15 @@ import re
 import tempfile
 import pandas as pd
 import streamlit as st
-from pipeline import run_pipeline, write_subtitles_ass, write_subtitles_srt, burn_subtitles_ffmpeg, DEFAULT_GEMINI_KEY, DEFAULT_PEXELS_KEY
+from pipeline import (
+    run_pipeline,
+    write_subtitles_ass,
+    write_subtitles_srt,
+    burn_subtitles_ffmpeg,
+    extract_curated_punch_callouts,
+    DEFAULT_GEMINI_KEY,
+    DEFAULT_PEXELS_KEY
+)
 
 # Configure Streamlit Page
 st.set_page_config(
@@ -176,7 +184,7 @@ if uploaded_file is not None:
                 
                 try:
                     with st.spinner("AI Agents at work..."):
-                        final_path, plan, transcript_data = run_pipeline(
+                        final_path, plan, transcript_data, punch_callouts = run_pipeline(
                             raw_video_path=raw_video_path,
                             output_path=output_video_path,
                             gemini_key=gemini_key,
@@ -190,6 +198,7 @@ if uploaded_file is not None:
                         st.session_state["current_file"] = uploaded_file.name
                         st.session_state["edit_plan"] = plan
                         st.session_state["transcript_data"] = transcript_data
+                        st.session_state["punch_callouts"] = punch_callouts
                         st.session_state["output_path"] = output_video_path
                         st.session_state["highlight_words"] = highlight_words
                         st.rerun()
@@ -208,13 +217,87 @@ if uploaded_file is not None:
                     )
                 st.success("🎉 Video rendered with animated photo cards and desk-aligned subtitles!")
 
-    # Subtitle Review & Live Editor
+    # Video Typography & Callout Review & Live Editors
     if "transcript_data" in st.session_state and st.session_state.get("processed_video"):
         st.markdown("---")
-        with st.expander("📝 Subtitle Review & Instant Editor (Fix Names & Typos)", expanded=True):
+        
+        # Ensure punch_callouts exists in session state
+        if "punch_callouts" not in st.session_state:
+            st.session_state["punch_callouts"] = extract_curated_punch_callouts(
+                st.session_state.get("edit_plan", {}),
+                st.session_state.get("transcript_data", {}),
+                st.session_state.get("highlight_words", "")
+            )
+
+        # 1. Dedicated Center Kinetic Callouts Editor
+        with st.expander("🎯 Center Kinetic Callouts (Middle Pop-Out Words)", expanded=True):
             st.markdown(
-                "Notice a misspelled name or proper noun (e.g. *Hema Prasad* $\\to$ *Hyma Prasad*)? "
-                "Edit below and click **Re-Burn Subtitles** to update the video in ~1-2 seconds without re-rendering the whole video!"
+                "Customize the high-impact punch words that pop up in the middle of the screen (e.g. *HYMA PRASAD*, *POOR COMMUNICATION*, *FEAR OF ENGLISH*). "
+                "Notice a misspelled name like **HEMA PRASAD**? Change it to **HYMA PRASAD** directly in the table, or uncheck **Show** to remove it completely!"
+            )
+            
+            callouts = st.session_state.get("punch_callouts", [])
+            callout_df_data = []
+            for idx, c in enumerate(callouts):
+                callout_df_data.append({
+                    "Index": idx,
+                    "Start (s)": float(c.get("start", 0)),
+                    "End (s)": float(c.get("end", 0)),
+                    "Callout Text": str(c.get("text", "")),
+                    "Color Theme": str(c.get("color", "red_gold")),
+                    "Show": bool(c.get("enabled", True))
+                })
+                
+            c_df = pd.DataFrame(callout_df_data)
+            edited_callouts_df = st.data_editor(
+                c_df,
+                column_config={
+                    "Index": st.column_config.NumberColumn(disabled=True, width="small"),
+                    "Start (s)": st.column_config.NumberColumn(min_value=0.0, step=0.1, format="%.2f", width="small"),
+                    "End (s)": st.column_config.NumberColumn(min_value=0.0, step=0.1, format="%.2f", width="small"),
+                    "Callout Text": st.column_config.TextColumn(width="large", help="Word or phrase to appear in the center"),
+                    "Color Theme": st.column_config.SelectboxColumn(
+                        options=["red_gold", "red", "gold", "white"],
+                        width="medium",
+                        help="red_gold = First word Red, next words Gold"
+                    ),
+                    "Show": st.column_config.CheckboxColumn(width="small", help="Uncheck to hide this callout from video")
+                },
+                use_container_width=True,
+                num_rows="dynamic",
+                key="callout_editor"
+            )
+
+            # Quick Add Callout Form
+            with st.form("add_callout_form", clear_on_submit=True):
+                st.markdown("##### ➕ Add Custom Center Callout")
+                ac_col1, ac_col2, ac_col3, ac_col4 = st.columns([2, 2, 4, 2])
+                with ac_col1:
+                    new_start = st.number_input("Start (s)", min_value=0.0, value=0.0, step=0.5)
+                with ac_col2:
+                    new_end = st.number_input("End (s)", min_value=0.0, value=2.0, step=0.5)
+                with ac_col3:
+                    new_text = st.text_input("Callout Text", placeholder="e.g. HYMA PRASAD")
+                with ac_col4:
+                    new_color = st.selectbox("Color", ["red_gold", "gold", "red", "white"])
+                
+                submitted_new_callout = st.form_submit_button("Add Word to Callouts")
+                if submitted_new_callout and new_text.strip():
+                    callouts.append({
+                        "start": round(new_start, 2),
+                        "end": round(new_end, 2),
+                        "text": new_text.strip().upper(),
+                        "color": new_color,
+                        "enabled": True
+                    })
+                    st.session_state["punch_callouts"] = callouts
+                    st.success(f"Added '{new_text.strip().upper()}' to callouts!")
+                    st.rerun()
+
+        # 2. Dialogue Subtitles Editor
+        with st.expander("📝 Dialogue Subtitles (Lower Desk & Transcription)", expanded=True):
+            st.markdown(
+                "Review full speech transcription. Edit lines below or use Quick Find & Replace to fix proper nouns."
             )
             
             # Find & Replace Tool
@@ -234,6 +317,10 @@ if uploaded_file is not None:
                             if find_txt.lower() in seg["text"].lower():
                                 seg["text"] = re.sub(re.escape(find_txt), replace_txt, seg["text"], flags=re.IGNORECASE)
                                 count += 1
+                        # Also replace in punch_callouts if present
+                        for c in st.session_state.get("punch_callouts", []):
+                            if find_txt.lower() in c.get("text", "").lower():
+                                c["text"] = re.sub(re.escape(find_txt), replace_txt, c["text"], flags=re.IGNORECASE).upper()
                         st.success(f"Replaced {count} occurrences of '{find_txt}' with '{replace_txt}'!")
                         st.rerun()
             
@@ -256,38 +343,54 @@ if uploaded_file is not None:
                 num_rows="fixed",
                 key="sub_editor"
             )
+
+        # 3. Master Re-Burn Button for Instant 1.5s Rendering
+        st.markdown("---")
+        if st.button("⚡ Re-Burn Video (Subtitles & Center Callouts) (Takes ~1.5s)", key="btn_reburn", type="primary"):
+            # Update segments from dataframe
+            for idx, row in edited_df.iterrows():
+                if idx < len(segments):
+                    segments[idx]["text"] = row["Subtitle Text"]
+
+            # Update punch callouts from dataframe
+            updated_callouts = []
+            for _, row in edited_callouts_df.iterrows():
+                txt = str(row["Callout Text"]).strip()
+                if txt:
+                    updated_callouts.append({
+                        "start": float(row["Start (s)"]),
+                        "end": float(row["End (s)"]),
+                        "text": txt.upper(),
+                        "color": str(row["Color Theme"]),
+                        "enabled": bool(row["Show"])
+                    })
+            st.session_state["punch_callouts"] = updated_callouts
+
+            # Write updated ASS with dynamic styling for both layers
+            updated_ass = "subtitles.ass"
+            hl_words = st.session_state.get("highlight_words", "")
+            write_subtitles_ass(
+                st.session_state["transcript_data"],
+                ass_path=updated_ass,
+                highlight_words=hl_words,
+                margin_v=sub_margin_v,
+                punch_callouts=updated_callouts
+            )
+            write_subtitles_srt(st.session_state["transcript_data"], "subtitles.srt")
             
-            # Fast Re-Burn Button
-            if st.button("⚡ Re-Burn Subtitles into Video (Takes ~2s)", key="btn_reburn"):
-                # Update segments from dataframe
-                for idx, row in edited_df.iterrows():
-                    if idx < len(segments):
-                        segments[idx]["text"] = row["Subtitle Text"]
-                
-                # Write updated ASS with dynamic styling
-                updated_ass = "subtitles.ass"
-                hl_words = st.session_state.get("highlight_words", "")
-                write_subtitles_ass(
-                    st.session_state["transcript_data"],
-                    ass_path=updated_ass,
-                    highlight_words=hl_words,
-                    margin_v=sub_margin_v
-                )
-                write_subtitles_srt(st.session_state["transcript_data"], "subtitles.srt")
-                
-                # Fast re-burn using FFmpeg on temp_assembled.mp4
-                base_video = "temp_assembled.mp4" if os.path.exists("temp_assembled.mp4") else raw_video_path
-                target_output = st.session_state.get("output_path", "final_edited_video.mp4")
-                
-                burn_subtitles_ffmpeg(
-                    video_input_path=base_video,
-                    sub_path=updated_ass,
-                    video_output_path=target_output,
-                    margin_v=sub_margin_v
-                )
-                st.session_state["processed_video"] = target_output
-                st.success("✨ Subtitles updated and re-burned into video in ~1.5 seconds!")
-                st.rerun()
+            # Fast re-burn using FFmpeg on temp_assembled.mp4
+            base_video = "temp_assembled.mp4" if os.path.exists("temp_assembled.mp4") else raw_video_path
+            target_output = st.session_state.get("output_path", "final_edited_video.mp4")
+            
+            burn_subtitles_ffmpeg(
+                video_input_path=base_video,
+                sub_path=updated_ass,
+                video_output_path=target_output,
+                margin_v=sub_margin_v
+            )
+            st.session_state["processed_video"] = target_output
+            st.success("✨ Video updated and re-burned with your exact words in ~1.5 seconds!")
+            st.rerun()
 
     # Inspect AI Blueprint
     if "edit_plan" in st.session_state:

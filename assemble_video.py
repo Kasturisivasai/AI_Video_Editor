@@ -7,7 +7,7 @@ if not hasattr(PIL.Image, "ANTIALIAS"):
     setattr(PIL.Image, "ANTIALIAS", PIL.Image.Resampling.LANCZOS)
 
 from moviepy.editor import VideoFileClip
-from pipeline import assemble_final_video, write_subtitles_ass
+from pipeline import assemble_final_video, write_subtitles_ass, extract_curated_punch_callouts
 
 def assemble_cut(
     raw_video_path="VID-20260904-WA0005.mp4",
@@ -32,15 +32,18 @@ def assemble_cut(
     vid_w, vid_h = probe_clip.w, probe_clip.h
     probe_clip.close()
 
-    cues = plan.get("visual_cues") or plan.get("b_roll_cues") or []
-    print("Generating reel ASS subtitles with in-line gold word highlights...")
+    highlight_words = "toxic, double, depression, money, salary, manager"
+    punch_callouts = extract_curated_punch_callouts(plan, transcript_data, highlight_words)
+
+    print("Generating reel ASS subtitles with in-line gold word highlights & center kinetic callouts...")
     ass_path = write_subtitles_ass(
         transcript_data,
         ass_path="subtitles.ass",
         video_w=vid_w,
         video_h=vid_h,
-        highlight_words="toxic, double, depression, money, salary, manager",
-        margin_v=55
+        highlight_words=highlight_words,
+        margin_v=55,
+        punch_callouts=punch_callouts
     )
 
     print("Assembling video with upper photo cards, kinetic reel typography & subtitles...")
@@ -50,8 +53,9 @@ def assemble_cut(
         sub_path=ass_path,
         output_path=output_path,
         transcript_data=transcript_data,
-        highlight_words="toxic, double, depression, money, salary, manager",
-        sub_margin_v=55
+        highlight_words=highlight_words,
+        sub_margin_v=55,
+        punch_callouts=punch_callouts
     )
     print(f"Done! Final edited video saved as {output_path}")
 

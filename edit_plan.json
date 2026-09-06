@@ -4,59 +4,59 @@
     {
       "start": 22.0,
       "end": 26.0,
-      "search_keyword": "top student excellent grades report card",
+      "search_keyword": "student top grades academic report card",
       "asset_type": "photo",
-      "reason": "Highlights the student's exceptional academic background and intelligence.",
-      "local_file": "assets/b_roll\\asset_0_top_student_excellent_gra.jpg"
+      "reason": "Visualizes the student's high academic achievement on paper",
+      "local_file": "assets/b_roll\\asset_0_student_top_grades_academ.jpg"
     },
     {
-      "start": 33.5,
-      "end": 37.5,
-      "search_keyword": "anxious young man social anxiety fear",
+      "start": 31.5,
+      "end": 35.5,
+      "search_keyword": "nervous man sweating during speaking anxiety",
       "asset_type": "photo",
-      "reason": "Illustrates the contrast of deep anxiety and fear of speaking English.",
-      "local_file": "assets/b_roll\\asset_1_anxious_young_man_social_.jpg"
+      "reason": "Depicts fear of speaking in English and social anxiety",
+      "local_file": "assets/b_roll\\asset_1_nervous_man_sweating_duri.jpg"
     },
     {
       "start": 44.5,
       "end": 48.5,
-      "search_keyword": "job interview rejection depressed candidate",
+      "search_keyword": "depressed job seeker rejection letter",
       "asset_type": "photo",
-      "reason": "Visualizes the painful consequence of interview rejections due to communication barriers.",
-      "local_file": "assets/b_roll\\asset_2_job_interview_rejection_d.jpg"
+      "reason": "Highlights the pain of repeatedly failing job interviews",
+      "local_file": "assets/b_roll\\asset_2_depressed_job_seeker_reje.jpg"
     },
     {
-      "start": 66.5,
-      "end": 70.5,
-      "search_keyword": "magnifying glass stress pressure psychological concept",
+      "start": 61.0,
+      "end": 65.0,
+      "search_keyword": "magnifying glass inspecting pressure conceptual",
       "asset_type": "photo",
-      "reason": "Metaphor for magnifying fear and perceiving simple interviews as terrifying hurdles.",
-      "local_file": "assets/b_roll\\asset_3_magnifying_glass_stress_p.jpg"
+      "reason": "Metaphor for magnifying interview pressure and scrutiny",
+      "local_file": "assets/b_roll\\asset_3_magnifying_glass_inspecti.jpg"
     },
     {
-      "start": 84.5,
-      "end": 88.5,
-      "search_keyword": "frustrated professional unable to speak communication block",
+      "start": 80.5,
+      "end": 84.5,
+      "search_keyword": "frustrated person tapping head blocked speech",
       "asset_type": "photo",
-      "reason": "Captures the emotional frustration of knowing answers but being unable to articulate them.",
-      "local_file": "assets/b_roll\\asset_4_frustrated_professional_u.jpg"
+      "reason": "Represents having knowledge internally but being unable to articulate it",
+      "local_file": "assets/b_roll\\asset_4_frustrated_person_tapping.jpg"
     }
   ],
   "punch_ins": [
     {
-      "start": 46.72,
-      "end": 48.06,
-      "reason": "Emphasizes the harsh reality of constant interview rejection."
+      "start": 10.44,
+      "end": 12.5,
+      "reason": "Emphasizes the psychologist's professional introduction"
     },
     {
-      "start": 68.0,
-      "end": 69.8,
-      "reason": "Emphasizes the psychological root cause: magnifying fear."
+      "start": 46.56,
+      "end": 48.6,
+      "reason": "Punches in on the repeated failure statement for dramatic impact"
     },
     {
-      "start": 87.72,
-      "end": 89.8,
-      "reason": "Dramatic climax highlighting repeated failures despite having full knowledge."
+      "start": 88.7,
+      "end": 90.7,
+      "reason": "Highlights the core tragedy of failing despite having all answers"
     }
   ]
 }

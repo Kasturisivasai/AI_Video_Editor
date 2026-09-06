@@ -1,148 +1,140 @@
 1
-00:00:00,000 --> 00:00:02,120
+00:00:00,000 --> 00:00:03,780
 Due to poor communication skills,
 
 2
-00:00:02,120 --> 00:00:04,540
+00:00:04,580 --> 00:00:08,040
 how difficult life becomes,
 
 3
-00:00:04,540 --> 00:00:07,420
-I will share a case.
+00:00:08,360 --> 00:00:10,360
+I will share a case with you.
 
 4
-00:00:07,420 --> 00:00:10,980
-I am Dr. Hyma Prasad,
+00:00:10,440 --> 00:00:14,880
+I am Dr. Hyma Prasad, Psychologist.
 
 5
-00:00:10,980 --> 00:00:13,560
-Psychologist.
+00:00:14,900 --> 00:00:18,660
+In the cases I dealt with recently,
 
 6
-00:00:13,560 --> 00:00:17,580
-Among the cases I handled,
+00:00:18,780 --> 00:00:20,360
+a boy had communication...
 
 7
-00:00:17,580 --> 00:00:20,940
-one boy had communication...
-
-8
-00:00:20,940 --> 00:00:22,800
+00:00:20,440 --> 00:00:22,380
 He studies very well,
 
-9
-00:00:22,800 --> 00:00:24,840
+8
+00:00:22,420 --> 00:00:23,940
 gets good marks,
 
+9
+00:00:23,980 --> 00:00:25,140
+everything is very good.
+
 10
-00:00:24,840 --> 00:00:26,600
-everything is great.
+00:00:25,200 --> 00:00:28,520
+On paper, he is very good, excellent.
 
 11
-00:00:26,600 --> 00:00:28,560
-His entire record is excellent.
+00:00:28,660 --> 00:00:30,820
+But when made to sit and speak,
 
 12
-00:00:28,560 --> 00:00:30,560
-Very good, excellent.
-
-13
-00:00:30,560 --> 00:00:32,540
-But when speaking,
-
-14
-00:00:32,540 --> 00:00:34,880
+00:00:30,860 --> 00:00:32,140
 he fears English.
 
+13
+00:00:32,220 --> 00:00:35,180
+He fears talking to the person opposite.
+
+14
+00:00:35,260 --> 00:00:37,580
+To go and take coaching anywhere,
+
 15
-00:00:34,880 --> 00:00:37,160
-Afraid to talk to people.
+00:00:37,620 --> 00:00:39,460
+he is afraid to go to coaching.
 
 16
-00:00:37,160 --> 00:00:40,540
-Afraid to attend coaching classes.
-
-17
-00:00:40,540 --> 00:00:43,180
+00:00:39,780 --> 00:00:42,660
 With so many fears,
 
-18
-00:00:43,180 --> 00:00:45,420
+17
+00:00:42,740 --> 00:00:44,480
 he couldn't face interviews.
 
+18
+00:00:44,520 --> 00:00:46,540
+Going to interviews, failing.
+
 19
-00:00:45,420 --> 00:00:46,720
-Attending interviews,
+00:00:46,560 --> 00:00:48,640
+Going to interviews, failing.
 
 20
-00:00:46,720 --> 00:00:48,060
-and getting rejected.
+00:00:48,680 --> 00:00:50,480
+Why is all this happening?
 
 21
-00:00:48,060 --> 00:00:49,960
-Why is this happening?
+00:00:50,500 --> 00:00:52,360
+Mainly, nowadays,
 
 22
-00:00:49,960 --> 00:00:52,820
-Mainly, these days,
+00:00:52,400 --> 00:00:55,440
+there is no need to fear English.
 
 23
-00:00:52,820 --> 00:00:55,440
-no need to fear English.
+00:00:55,480 --> 00:00:58,740
+Because every subject you study is in English.
 
 24
-00:00:55,440 --> 00:00:58,740
-Every subject is in English.
+00:00:58,780 --> 00:01:00,780
+Even so, why does that boy fear?
 
 25
-00:00:58,740 --> 00:01:00,900
-Even so, why is he afraid?
+00:01:00,900 --> 00:01:04,900
+Because he looks at an interview under a magnifying glass.
 
 26
-00:01:00,900 --> 00:01:03,880
-Because...
+00:01:04,940 --> 00:01:08,640
+From childhood, to speak to anyone...
 
 27
-00:01:03,880 --> 00:01:06,820
-he views interviews through a lens.
+00:01:08,740 --> 00:01:11,860
+Why does this happen? The subject with you
 
 28
-00:01:06,820 --> 00:01:10,360
-Magnifying them with fear.
+00:01:11,900 --> 00:01:14,880
+is theoretical.
 
 29
-00:01:10,360 --> 00:01:13,100
-You have the subject theoretically,
+00:01:14,960 --> 00:01:17,200
+You don't know the way to explain it.
 
 30
-00:01:13,100 --> 00:01:16,540
-but lack the way to explain it.
+00:01:17,300 --> 00:01:20,800
+Meaning, the subject is inside you,
 
 31
-00:01:16,540 --> 00:01:18,480
-You know the subject,
+00:01:20,860 --> 00:01:23,900
+you can tell it, but cannot express it.
 
 32
-00:01:18,480 --> 00:01:20,520
-you can explain it,
+00:01:23,940 --> 00:01:26,660
+Because he couldn't express it like that,
 
 33
-00:01:20,520 --> 00:01:22,740
-but cannot express it.
+00:01:26,700 --> 00:01:28,660
+even though he has all the answers,
 
 34
-00:01:22,740 --> 00:01:25,340
-Unable to express himself,
+00:01:28,700 --> 00:01:32,400
+sadly, he is failing many interviews.
 
 35
-00:01:25,340 --> 00:01:27,720
-despite knowing all answers,
-
-36
-00:01:27,720 --> 00:01:30,000
-he failed many interviews.
-
-37
-00:01:30,000 --> 00:01:32,580
-I'll tell you how to practice.
+00:01:32,440 --> 00:01:34,660
+I will tell you how to practice for this.
 

@@ -4,224 +4,212 @@
     {
       "id": 1,
       "start": 0.0,
-      "end": 2.12,
+      "end": 3.78,
       "text": "Due to poor communication skills,"
     },
     {
       "id": 2,
-      "start": 2.12,
-      "end": 4.54,
+      "start": 4.58,
+      "end": 8.04,
       "text": "how difficult life becomes,"
     },
     {
       "id": 3,
-      "start": 4.54,
-      "end": 7.42,
-      "text": "I will share a case."
+      "start": 8.36,
+      "end": 10.36,
+      "text": "I will share a case with you."
     },
     {
       "id": 4,
-      "start": 7.42,
-      "end": 10.98,
-      "text": "I am Dr. Hyma Prasad,"
+      "start": 10.44,
+      "end": 14.88,
+      "text": "I am Dr. Hema Prasad, Psychologist."
     },
     {
       "id": 5,
-      "start": 10.98,
-      "end": 13.56,
-      "text": "Psychologist."
+      "start": 14.9,
+      "end": 18.66,
+      "text": "In the cases I dealt with recently,"
     },
     {
       "id": 6,
-      "start": 13.56,
-      "end": 17.58,
-      "text": "Among the cases I handled,"
+      "start": 18.78,
+      "end": 20.36,
+      "text": "a boy had communication..."
     },
     {
       "id": 7,
-      "start": 17.58,
-      "end": 20.94,
-      "text": "one boy had communication..."
-    },
-    {
-      "id": 8,
-      "start": 20.94,
-      "end": 22.8,
+      "start": 20.44,
+      "end": 22.38,
       "text": "He studies very well,"
     },
     {
-      "id": 9,
-      "start": 22.8,
-      "end": 24.84,
+      "id": 8,
+      "start": 22.42,
+      "end": 23.94,
       "text": "gets good marks,"
     },
     {
+      "id": 9,
+      "start": 23.98,
+      "end": 25.14,
+      "text": "everything is very good."
+    },
+    {
       "id": 10,
-      "start": 24.84,
-      "end": 26.6,
-      "text": "everything is great."
+      "start": 25.2,
+      "end": 28.52,
+      "text": "On paper, he is very good, excellent."
     },
     {
       "id": 11,
-      "start": 26.6,
-      "end": 28.56,
-      "text": "His entire record is excellent."
+      "start": 28.66,
+      "end": 30.82,
+      "text": "But when made to sit and speak,"
     },
     {
       "id": 12,
-      "start": 28.56,
-      "end": 30.56,
-      "text": "Very good, excellent."
-    },
-    {
-      "id": 13,
-      "start": 30.56,
-      "end": 32.54,
-      "text": "But when speaking,"
-    },
-    {
-      "id": 14,
-      "start": 32.54,
-      "end": 34.88,
+      "start": 30.86,
+      "end": 32.14,
       "text": "he fears English."
     },
     {
+      "id": 13,
+      "start": 32.22,
+      "end": 35.18,
+      "text": "He fears talking to the person opposite."
+    },
+    {
+      "id": 14,
+      "start": 35.26,
+      "end": 37.58,
+      "text": "To go and take coaching anywhere,"
+    },
+    {
       "id": 15,
-      "start": 34.88,
-      "end": 37.16,
-      "text": "Afraid to talk to people."
+      "start": 37.62,
+      "end": 39.46,
+      "text": "he is afraid to go to coaching."
     },
     {
       "id": 16,
-      "start": 37.16,
-      "end": 40.54,
-      "text": "Afraid to attend coaching classes."
-    },
-    {
-      "id": 17,
-      "start": 40.54,
-      "end": 43.18,
+      "start": 39.78,
+      "end": 42.66,
       "text": "With so many fears,"
     },
     {
-      "id": 18,
-      "start": 43.18,
-      "end": 45.42,
+      "id": 17,
+      "start": 42.74,
+      "end": 44.48,
       "text": "he couldn't face interviews."
     },
     {
+      "id": 18,
+      "start": 44.52,
+      "end": 46.54,
+      "text": "Going to interviews, failing."
+    },
+    {
       "id": 19,
-      "start": 45.42,
-      "end": 46.72,
-      "text": "Attending interviews,"
+      "start": 46.56,
+      "end": 48.64,
+      "text": "Going to interviews, failing."
     },
     {
       "id": 20,
-      "start": 46.72,
-      "end": 48.06,
-      "text": "and getting rejected."
+      "start": 48.68,
+      "end": 50.48,
+      "text": "Why is all this happening?"
     },
     {
       "id": 21,
-      "start": 48.06,
-      "end": 49.96,
-      "text": "Why is this happening?"
+      "start": 50.5,
+      "end": 52.36,
+      "text": "Mainly, nowadays,"
     },
     {
       "id": 22,
-      "start": 49.96,
-      "end": 52.82,
-      "text": "Mainly, these days,"
+      "start": 52.4,
+      "end": 55.44,
+      "text": "there is no need to fear English."
     },
     {
       "id": 23,
-      "start": 52.82,
-      "end": 55.44,
-      "text": "no need to fear English."
+      "start": 55.48,
+      "end": 58.74,
+      "text": "Because every subject you study is in English."
     },
     {
       "id": 24,
-      "start": 55.44,
-      "end": 58.74,
-      "text": "Every subject is in English."
+      "start": 58.78,
+      "end": 60.78,
+      "text": "Even so, why does that boy fear?"
     },
     {
       "id": 25,
-      "start": 58.74,
-      "end": 60.9,
-      "text": "Even so, why is he afraid?"
+      "start": 60.9,
+      "end": 64.9,
+      "text": "Because he looks at an interview under a magnifying glass."
     },
     {
       "id": 26,
-      "start": 60.9,
-      "end": 63.88,
-      "text": "Because..."
+      "start": 64.94,
+      "end": 68.64,
+      "text": "From childhood, to speak to anyone..."
     },
     {
       "id": 27,
-      "start": 63.88,
-      "end": 66.82,
-      "text": "he views interviews through a lens."
+      "start": 68.74,
+      "end": 71.86,
+      "text": "Why does this happen? The subject with you"
     },
     {
       "id": 28,
-      "start": 66.82,
-      "end": 70.36,
-      "text": "Magnifying them with fear."
+      "start": 71.9,
+      "end": 74.88,
+      "text": "is theoretical."
     },
     {
       "id": 29,
-      "start": 70.36,
-      "end": 73.1,
-      "text": "You have the subject theoretically,"
+      "start": 74.96,
+      "end": 77.2,
+      "text": "You don't know the way to explain it."
     },
     {
       "id": 30,
-      "start": 73.1,
-      "end": 76.54,
-      "text": "but lack the way to explain it."
+      "start": 77.3,
+      "end": 80.8,
+      "text": "Meaning, the subject is inside you,"
     },
     {
       "id": 31,
-      "start": 76.54,
-      "end": 78.48,
-      "text": "You know the subject,"
+      "start": 80.86,
+      "end": 83.9,
+      "text": "you can tell it, but cannot express it."
     },
     {
       "id": 32,
-      "start": 78.48,
-      "end": 80.52,
-      "text": "you can explain it,"
+      "start": 83.94,
+      "end": 86.66,
+      "text": "Because he couldn't express it like that,"
     },
     {
       "id": 33,
-      "start": 80.52,
-      "end": 82.74,
-      "text": "but cannot express it."
+      "start": 86.7,
+      "end": 88.66,
+      "text": "even though he has all the answers,"
     },
     {
       "id": 34,
-      "start": 82.74,
-      "end": 85.34,
-      "text": "Unable to express himself,"
+      "start": 88.7,
+      "end": 92.4,
+      "text": "sadly, he is failing many interviews."
     },
     {
       "id": 35,
-      "start": 85.34,
-      "end": 87.72,
-      "text": "despite knowing all answers,"
-    },
-    {
-      "id": 36,
-      "start": 87.72,
-      "end": 90.0,
-      "text": "he failed many interviews."
-    },
-    {
-      "id": 37,
-      "start": 90.0,
-      "end": 92.58,
-      "text": "I'll tell you how to practice."
+      "start": 92.44,
+      "end": 94.66,
+      "text": "I will tell you how to practice for this."
     }
   ]
 }

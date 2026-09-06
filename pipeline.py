@@ -114,8 +114,9 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
        - DO NOT restrict yourself to literal physical nouns. Include conceptual, metaphorical, or emotional visuals (e.g., "market crash graph", "frustrated developer", "serene morning nature", "cryptocurrency wallet", "celebration confetti").
        - Always output English keywords for "search_keyword" (optimized for stock photo/video APIs).
        - Keep each visual appearance between 3.5 and 4.5 seconds. Space them out naturally across the timeline.
-    3. PUNCH-INS (Dynamic Zooms):
-       - Identify 2 to 4 high-emphasis words, surprising statistics, or punchlines to zoom in (1.15x) for 1 to 2 seconds to reset viewer attention.
+    3. PUNCH-INS (Dynamic Concepts):
+       - Identify 2 to 4 high-emphasis words, surprising statistics, or conceptual punchlines to emphasize (1 to 2 seconds).
+       - CRITICAL RULE FOR PUNCH WORDS: NEVER select speaker names, greetings, or self-introductions (e.g., 'Dr. Hema', 'I am...', 'My name is...', 'Psychologist'). Punch words must ONLY be punchy, thematic high-impact concepts (e.g., 'POOR COMMUNICATION', 'FEAR OF ENGLISH', 'REJECTED', 'JOB INTERVIEW', 'CONFIDENCE BLOCK').
     
     STRICT JSON OUTPUT SCHEMA:
     {
@@ -130,7 +131,7 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
         }
       ],
       "punch_ins": [
-        {"start": float, "end": float, "reason": "Emphasis punchline"}
+        {"start": float, "end": float, "reason": "High-impact thematic concept (never speaker names/intros)"}
       ]
     }
     Return ONLY valid JSON.
@@ -217,16 +218,101 @@ def format_ass_time(seconds: float) -> str:
         cs = 99
     return f"{hours}:{minutes:02d}:{secs:02d}.{cs:02d}"
 
+NAME_INTRO_BLOCKLIST = {
+    "hema", "hyma", "prasad", "dr", "doctor", "psychologist", "hymavathi",
+    "name", "hello", "welcome", "myself", "i am", "this is", "speaking"
+}
+
+def format_callout_ass_text(text: str, color_mode: str = "red_gold") -> str:
+    """Formats center punch text with ASS inline color tags matching viral podcast reels."""
+    words = text.strip().upper().split()
+    if not words:
+        return ""
+    if color_mode == "red_gold":
+        if len(words) >= 2:
+            first = rf"{{\c&H002020FF&}}{words[0]}"
+            rest = " ".join([rf"{{\c&H0000E6FF&}}{w}" for w in words[1:]])
+            return f"{first} {rest}"
+        else:
+            return rf"{{\c&H0000E6FF&}}{words[0]}"
+    elif color_mode == "red":
+        return rf"{{\c&H002020FF&}}{' '.join(words)}"
+    elif color_mode == "gold":
+        return rf"{{\c&H0000E6FF&}}{' '.join(words)}"
+    else: # white
+        return rf"{{\c&H00FFFFFF&}}{' '.join(words)}"
+
+def extract_curated_punch_callouts(edit_plan: dict, transcript_data: dict, highlight_words: str = "") -> list:
+    """
+    Extracts high-impact thematic punch callouts while strictly filtering out names and speaker introductions.
+    Returns a list of dicts: [{'start': float, 'end': float, 'text': str, 'color': 'red_gold', 'enabled': bool}]
+    """
+    callouts = []
+    hl_list = [w.strip().lower() for w in highlight_words.split(",") if w.strip()]
+    segments = transcript_data.get("segments", []) if transcript_data else []
+
+    # 1. Custom user highlight keywords
+    for seg in segments:
+        text_raw = seg.get("text", "")
+        text_lower = text_raw.lower()
+        start_t = float(seg.get("start", 0))
+        end_t = float(seg.get("end", 0))
+        dur = end_t - start_t
+        if dur < 0.4:
+            continue
+
+        for hw in hl_list:
+            if hw in text_lower:
+                callouts.append({
+                    "start": round(start_t, 2),
+                    "end": round(min(start_t + 2.2, end_t), 2),
+                    "text": hw.upper(),
+                    "color": "red_gold",
+                    "enabled": True
+                })
+                break
+
+    # 2. AI Editorial punch-ins (strictly filtering speaker names/intros)
+    punch_ins = edit_plan.get("punch_ins", []) if edit_plan else []
+    for pi in punch_ins:
+        pi_start = float(pi.get("start", 0))
+        for seg in segments:
+            seg_start = float(seg.get("start", 0))
+            seg_end = float(seg.get("end", 0))
+            if abs(pi_start - seg_start) < 1.5:
+                clean_words = [cw for cw in re.sub(r"[^\w\s]", "", seg.get("text", "")).split() if len(cw) > 2]
+                filtered = [w for w in clean_words if w.lower() not in NAME_INTRO_BLOCKLIST]
+                if filtered:
+                    phrase = " ".join(filtered[:2]).upper()
+                    if not any(abs(c["start"] - seg_start) < 2.0 for c in callouts):
+                        callouts.append({
+                            "start": round(seg_start, 2),
+                            "end": round(min(seg_start + 2.2, seg_end), 2),
+                            "text": phrase,
+                            "color": "red_gold",
+                            "enabled": True
+                        })
+                break
+
+    return callouts
+
 def write_subtitles_ass(
     transcript_data: dict,
     ass_path: str = "subtitles.ass",
     video_w: int = 478,
     video_h: int = 850,
     highlight_words: str = "",
-    margin_v: int = 55
+    margin_v: int = 55,
+    punch_callouts: list = None,
+    callout_margin_v: int = 330
 ) -> str:
-    """Generates an ASS subtitle file with clean reel typography and in-line gold word highlighting."""
-    font_size = max(16, int(video_w * 0.044)) # ~21px on 478w
+    """
+    Generates an ASS subtitle file with two professional layers:
+    - Layer 0 (ReelSub): Lower desk dialogue subtitles with in-line gold word highlights.
+    - Layer 1 (PunchCallout): High-impact center kinetic typography in distressed Impact font.
+    """
+    font_size = max(16, int(video_w * 0.044)) # ~21px
+    callout_font_size = max(24, int(video_w * 0.088)) # ~42px
     
     header = f"""[Script Info]
 ScriptType: v4.00+
@@ -236,6 +322,7 @@ PlayResY: {video_h}
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: ReelSub,Arial Black,{font_size},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3.2,1.2,2,20,20,{margin_v},1
+Style: PunchCallout,Impact,{callout_font_size},&H0000E6FF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,4.5,2.5,2,20,20,{callout_margin_v},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -244,19 +331,34 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     hl_list = [w.strip() for w in highlight_words.split(",") if w.strip()]
 
     events = []
-    for seg in transcript_data.get("segments", []):
-        start_sec = float(seg["start"])
-        end_sec = float(seg["end"])
-        start_str = format_ass_time(start_sec)
-        end_str = format_ass_time(end_sec)
-        text = seg["text"].strip().upper()
-        
-        # Apply in-line keyword highlighting with ASS color tags (vibrant electric gold)
-        for hw in hl_list:
-            pattern = re.compile(rf"\b({re.escape(hw.upper())})\b", re.IGNORECASE)
-            text = pattern.sub(r"{\\c&H0000E6FF&}\1{\\c&H00FFFFFF&}", text)
+    # Layer 0: Dialogue Subtitles at lower desk
+    if transcript_data:
+        for seg in transcript_data.get("segments", []):
+            start_sec = float(seg["start"])
+            end_sec = float(seg["end"])
+            start_str = format_ass_time(start_sec)
+            end_str = format_ass_time(end_sec)
+            text = seg["text"].strip().upper()
+            
+            # Apply in-line keyword highlighting with ASS color tags (vibrant electric gold)
+            for hw in hl_list:
+                pattern = re.compile(rf"\b({re.escape(hw.upper())})\b", re.IGNORECASE)
+                text = pattern.sub(r"{\\c&H0000E6FF&}\1{\\c&H00FFFFFF&}", text)
 
-        events.append(f"Dialogue: 0,{start_str},{end_str},ReelSub,,0,0,0,,{text}")
+            events.append(f"Dialogue: 0,{start_str},{end_str},ReelSub,,0,0,0,,{text}")
+
+    # Layer 1: Center Punch Callouts (Pure Kinetic Typography in safe chest area)
+    if punch_callouts:
+        for callout in punch_callouts:
+            if not callout.get("enabled", True):
+                continue
+            raw_callout_txt = callout.get("text", "").strip()
+            if not raw_callout_txt:
+                continue
+            s_str = format_ass_time(float(callout["start"]))
+            e_str = format_ass_time(float(callout["end"]))
+            styled_txt = format_callout_ass_text(raw_callout_txt, callout.get("color", "red_gold"))
+            events.append(f"Dialogue: 1,{s_str},{e_str},PunchCallout,,0,0,0,,{styled_txt}")
 
     with open(ass_path, "w", encoding="utf-8") as f:
         f.write(header + "\n".join(events) + "\n")
@@ -499,9 +601,10 @@ def assemble_final_video(
     output_path: str = "final_edited_video.mp4",
     transcript_data: dict = None,
     highlight_words: str = "",
-    sub_margin_v: int = 55
+    sub_margin_v: int = 55,
+    punch_callouts: list = None
 ) -> str:
-    """Composites raw video with upper animated photo cards, pure kinetic typography callouts, and desk subtitles."""
+    """Composites raw video with upper animated photo cards, and burns ASS subtitles + kinetic callouts."""
     main_clip = VideoFileClip(raw_video_path)
     combined = main_clip
 
@@ -537,40 +640,6 @@ def assemble_final_video(
                 asset_clip = asset_clip.set_position("center").set_start(start)
                 overlays.append(asset_clip)
 
-    # Layer Pure Kinetic Typography Callouts (No childish pill boxes!)
-    words_list = [w.strip().lower() for w in highlight_words.split(",") if w.strip()]
-    if transcript_data:
-        for seg in transcript_data.get("segments", []):
-            text_lower = seg.get("text", "").lower()
-            start_t = float(seg.get("start", 0))
-            end_t = float(seg.get("end", 0))
-            dur = end_t - start_t
-            if dur > 0.4:
-                matched_phrase = None
-                for w in words_list:
-                    if w in text_lower:
-                        matched_phrase = w.upper()
-                        break
-                        
-                if not matched_phrase:
-                    for pi in edit_plan.get("punch_ins", []):
-                        if abs(pi.get("start", 0) - start_t) < 1.5:
-                            candidate_words = [cw for cw in re.sub(r"[^\w\s]", "", seg["text"]).split() if len(cw) > 3]
-                            if candidate_words:
-                                matched_phrase = " ".join(candidate_words[:2]).upper()
-                            break
-
-                if matched_phrase:
-                    callout_clip = make_reel_kinetic_word_clip(
-                        matched_phrase,
-                        start=start_t,
-                        duration=min(dur, 2.0),
-                        video_w=combined.w,
-                        video_h=combined.h,
-                        y_pos=int(combined.h * 0.58)
-                    )
-                    overlays.append(callout_clip)
-
     final_render = CompositeVideoClip(overlays)
     temp_output = "temp_assembled.mp4"
     final_render.write_videofile(
@@ -585,7 +654,7 @@ def assemble_final_video(
     final_render.close()
     main_clip.close()
 
-    # Burn subtitles with FFmpeg
+    # Burn subtitles and kinetic punch callouts with FFmpeg (fast ~1.5s, no video re-encoding)
     burn_subtitles_ffmpeg(
         video_input_path=temp_output,
         sub_path=sub_path,
@@ -595,7 +664,7 @@ def assemble_final_video(
         video_h=combined.h
     )
 
-    # Cleanup temp sound files, keep temp_assembled.mp4 for instant subtitle re-burns
+    # Cleanup temp sound files, keep temp_assembled.mp4 for instant subtitle/callout re-burns
     for temp_f in ["temp_assembledTEMP_MPY_wvf_snd.mp4"]:
         if os.path.exists(temp_f):
             try:
@@ -613,6 +682,7 @@ def run_pipeline(
     vocab_hints: str = "",
     highlight_words: str = "",
     sub_margin_v: int = 55,
+    punch_callouts: list = None,
     progress_callback = None
 ):
     """End-to-end processing pipeline with progress updates."""
@@ -646,6 +716,10 @@ def run_pipeline(
     notify(75, "Generating synchronized ASS subtitles with in-line gold word highlights...")
     cues = updated_plan.get("visual_cues") or updated_plan.get("b_roll_cues") or []
     
+    # Extract curated punch callouts (strictly filtering out names and speaker intros)
+    if punch_callouts is None:
+        punch_callouts = extract_curated_punch_callouts(updated_plan, transcript_data, highlight_words)
+
     # Get video dimensions
     probe_clip = VideoFileClip(raw_video_path)
     vid_w, vid_h = probe_clip.w, probe_clip.h
@@ -657,7 +731,8 @@ def run_pipeline(
         video_w=vid_w,
         video_h=vid_h,
         highlight_words=highlight_words,
-        margin_v=sub_margin_v
+        margin_v=sub_margin_v,
+        punch_callouts=punch_callouts
     )
     # Also write standard srt for fallback
     write_subtitles_srt(transcript_data, "subtitles.srt")
@@ -670,8 +745,10 @@ def run_pipeline(
         output_path=output_path,
         transcript_data=transcript_data,
         highlight_words=highlight_words,
-        sub_margin_v=sub_margin_v
+        sub_margin_v=sub_margin_v,
+        punch_callouts=punch_callouts
     )
 
     notify(100, "Video editing complete!")
-    return final_video, updated_plan, transcript_data
+    return final_video, updated_plan, transcript_data, punch_callouts
+
