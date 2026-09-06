@@ -14,9 +14,11 @@ if not api_key:
 genai.configure(api_key=api_key, transport="rest")
 
 GEMINI_MODEL_CANDIDATES = [
+    "gemini-3.8-flash",
+    "gemini-3.5-flash",
+    "gemini-flash-latest",
     "gemini-3.7-flash",
-    "gemini-3.6-flash",
-    "gemini-2.5-flash"
+    "gemini-3.5-flash-lite"
 ]
 
 def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
@@ -40,18 +42,27 @@ def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
        - Identify if there is a compelling, high-energy sentence or curiosity gap within the video that should serve as an upfront teaser hook (3 to 6 seconds max).
        - If the video already starts with a strong, natural opening, set "hook_segment": null.
 
-    2. VISUAL AND B-ROLL OVERLAYS (High-Quality Stock Imagery / Video):
+    2. VISUAL AND B-ROLL OVERLAYS (High-Resolution Realistic Stock Imagery / Video):
        - GENERATE EXACTLY 8 TO 9 VISUAL CUES distributed evenly across the video timeline (approx every 8 to 12 seconds).
-       - Each asset must tightly synchronize to appear as the speaker introduces a key symptom, concept, workplace situation, or numbered point.
-       - SEARCH KEYWORDS: Write clean, evocative, high-resolution stock photography and video search terms (e.g. "stressed businessman headache office", "insomnia alarm clock dark bedroom", "exhausted doctor burnout moody lighting", "stomach pain gastritis healthy diet", "professional counseling therapy session", "employee burnout laptop desk").
-       - DO NOT write "2d vector illustration" or "icon graphic" in search keywords, as stock libraries return low-resolution clipart. Use realistic, cinematic stock photography/video search terms.
+       - MANDATORY SENTIMENT & CONTENT ACCURACY:
+         * POSITIVE / ASPIRATIONAL TOPICS (e.g. becoming the best employee, career success, workplace communication, dedication, productivity, learning new skills):
+           MUST use positive, bright, smiling, and professional human stock photography (e.g., 'smiling professional employee in modern bright office', 'confident businesswoman smiling at work desk', 'business team meeting conference room smiling').
+           ABSOLUTELY FORBIDDEN to use gloomy, dark, depressed, or sad imagery for positive moments!
+         * CALM / PATIENCE TOPICS (e.g. 'stay calm around them', 'people have moods', patience, resilience):
+           MUST use serene, calm, relaxed professional photography (e.g., 'peaceful calm professional person smiling deep breath office', 'relaxed serene person smiling modern office desk').
+           ABSOLUTELY FORBIDDEN to use hand signs, gestures, icons, or abstract symbols!
+         * STRESS / BURNOUT TOPICS (e.g. frustration, heavy workload):
+           Realistic professional workplace fatigue only (e.g., 'tired office worker rubbing eyes at laptop desk'). NEVER clinical depression, hospitals, or grotesque photos.
+       - STRICT KEYWORD RULES:
+         * Describe a CONCRETE REAL HUMAN SCENE (e.g., "smiling executive modern office", "business team conference meeting").
+         * DO NOT use abstract words like "symbol", "icon", "vector", "graphic", "illustration", "concept", "sign", "gesture".
        - Keep each visual appearance between 3.0 and 4.0 seconds.
 
     3. DYNAMIC CENTER PUNCH CALLOUTS (High-Impact Power Words):
        - Identify 5 to 7 high-impact power words or punch concepts across the timeline (1.5 to 2.2 seconds each).
        - STRICT RULES FOR CALLOUT WORDS:
          * EXACTLY 1 TO 2 WORDS MAXIMUM.
-         * MUST be core thematic concepts, strong emotions, or critical terms (e.g., 'BURNOUT', 'INSOMNIA', 'JOB STRESS', 'GASTRITIS', 'DEPRESSION', 'REJECTION', 'POOR SALARY', 'ANXIETY', 'COMMUNICATION').
+         * MUST be core thematic concepts, strong emotions, or critical terms (e.g., 'BEST EMPLOYEE', 'COMMUNICATION', 'DEDICATION', 'PATIENCE', 'SUCCESS').
          * NEVER select grammatical filler words, auxiliary verbs, prepositions, or pronouns (STRICTLY FORBIDDEN: 'THEY MUST', 'FOR GIVING', 'LEARN YOUR', 'WE ARE', 'CAN BE', 'IN THE', 'SO THAT', 'IT IS', 'BECAUSE OF', 'ABOUT THIS').
          * NEVER select speaker names, greetings, or self-introductions (STRICTLY FORBIDDEN: 'HEMA', 'HYMA PRASAD', 'DOCTOR', 'PSYCHOLOGIST', 'MYSELF').
 
@@ -62,7 +73,7 @@ def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
         {
           "start": float,
           "end": float,
-          "search_keyword": "clean high-resolution stock photo/video search query (e.g. stressed executive headache desk)",
+          "search_keyword": "clean high-resolution stock photo/video search query describing real people (e.g. smiling corporate executive modern office)",
           "asset_type": "photo",
           "display_mode": "fullscreen",
           "reason": "Contextual rationale"
@@ -72,7 +83,7 @@ def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
         {
           "start": float,
           "end": float,
-          "callout_text": "EXACT 1-2 POWER WORDS (e.g. 'BURNOUT', 'INSOMNIA')",
+          "callout_text": "EXACT 1-2 POWER WORDS (e.g. 'BEST EMPLOYEE', 'COMMUNICATION')",
           "reason": "Why this concept hits hard"
         }
       ]

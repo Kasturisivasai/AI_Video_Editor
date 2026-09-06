@@ -39,11 +39,11 @@ def extract_audio(video_path: str, audio_path: str = "temp_audio.wav") -> str:
     return audio_path
 
 GEMINI_MODEL_CANDIDATES = [
-    "gemini-3.7-flash",
+    "gemini-3.8-flash",
+    "gemini-3.5-flash",
     "gemini-flash-latest",
-    "gemini-3.5-flash-lite",
-    "gemini-3-flash-preview",
-    "gemini-3.6-flash"
+    "gemini-3.7-flash",
+    "gemini-3.5-flash-lite"
 ]
 
 def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, vocab_hints: str = "") -> dict:
@@ -110,18 +110,27 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
        - Identify if there is a compelling, high-energy sentence or curiosity gap within the video that should serve as an upfront teaser hook (3 to 6 seconds max).
        - If the video already starts with a strong, natural opening, set "hook_segment": null.
     
-    2. VISUAL AND B-ROLL OVERLAYS (High-Quality Stock Imagery / Video):
+    2. VISUAL AND B-ROLL OVERLAYS (High-Resolution Realistic Stock Imagery / Video):
        - GENERATE EXACTLY 8 TO 9 VISUAL CUES distributed evenly across the video timeline (approx every 8 to 12 seconds).
-       - Each asset must tightly synchronize to appear as the speaker introduces a key symptom, concept, workplace situation, or numbered point.
-       - SEARCH KEYWORDS: Write clean, evocative, high-resolution stock photography and video search terms (e.g. "stressed businessman headache office", "insomnia alarm clock dark bedroom", "exhausted doctor burnout moody lighting", "stomach pain gastritis healthy diet", "professional counseling therapy session", "employee burnout laptop desk").
-       - DO NOT write "2d vector illustration" or "icon graphic" in search keywords, as stock libraries return low-resolution clipart. Use realistic, cinematic stock photography/video search terms.
+       - MANDATORY SENTIMENT & CONTENT ACCURACY:
+         * POSITIVE / ASPIRATIONAL TOPICS (e.g. becoming the best employee, career success, workplace communication, dedication, productivity, learning new skills):
+           MUST use positive, bright, smiling, and professional human stock photography (e.g., 'smiling professional employee in modern bright office', 'confident businesswoman smiling at work desk', 'business team meeting conference room smiling').
+           ABSOLUTELY FORBIDDEN to use gloomy, dark, depressed, or sad imagery for positive moments!
+         * CALM / PATIENCE TOPICS (e.g. 'stay calm around them', 'people have moods', patience, resilience):
+           MUST use serene, calm, relaxed professional photography (e.g., 'peaceful calm professional person smiling deep breath office', 'relaxed serene person smiling modern office desk').
+           ABSOLUTELY FORBIDDEN to use hand signs, gestures, icons, or abstract symbols!
+         * STRESS / BURNOUT TOPICS (e.g. frustration, heavy workload):
+           Realistic professional workplace fatigue only (e.g., 'tired office worker rubbing eyes at laptop desk'). NEVER clinical depression, hospitals, or grotesque photos.
+       - STRICT KEYWORD RULES:
+         * Describe a CONCRETE REAL HUMAN SCENE (e.g., "smiling executive modern office", "business team conference meeting").
+         * DO NOT use abstract words like "symbol", "icon", "vector", "graphic", "illustration", "concept", "sign", "gesture".
        - Keep each visual appearance between 3.0 and 4.0 seconds.
     
     3. DYNAMIC CENTER PUNCH CALLOUTS (High-Impact Power Words):
        - Identify 5 to 7 high-impact power words or punch concepts across the timeline (1.5 to 2.2 seconds each).
        - STRICT RULES FOR CALLOUT WORDS:
          * EXACTLY 1 TO 2 WORDS MAXIMUM.
-         * MUST be core thematic concepts, strong emotions, or critical terms (e.g., 'BURNOUT', 'INSOMNIA', 'JOB STRESS', 'GASTRITIS', 'DEPRESSION', 'REJECTION', 'POOR SALARY', 'ANXIETY', 'COMMUNICATION').
+         * MUST be core thematic concepts, strong emotions, or critical terms (e.g., 'BEST EMPLOYEE', 'COMMUNICATION', 'DEDICATION', 'PATIENCE', 'SUCCESS').
          * NEVER select grammatical filler words, auxiliary verbs, prepositions, or pronouns (STRICTLY FORBIDDEN: 'THEY MUST', 'FOR GIVING', 'LEARN YOUR', 'WE ARE', 'CAN BE', 'IN THE', 'SO THAT', 'IT IS', 'BECAUSE OF', 'ABOUT THIS').
          * NEVER select speaker names, greetings, or self-introductions (STRICTLY FORBIDDEN: 'HEMA', 'HYMA PRASAD', 'DOCTOR', 'PSYCHOLOGIST', 'MYSELF').
     
@@ -132,7 +141,7 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
         {
           "start": float,
           "end": float,
-          "search_keyword": "clean high-resolution stock photo/video search query (e.g. stressed executive headache desk)",
+          "search_keyword": "clean high-resolution stock photo/video search query describing real people (e.g. smiling corporate executive modern office)",
           "asset_type": "photo",
           "display_mode": "fullscreen",
           "reason": "Contextual rationale"
@@ -142,7 +151,7 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
         {
           "start": float,
           "end": float,
-          "callout_text": "EXACT 1-2 POWER WORDS (e.g. 'BURNOUT', 'INSOMNIA')",
+          "callout_text": "EXACT 1-2 POWER WORDS (e.g. 'BEST EMPLOYEE', 'COMMUNICATION')",
           "reason": "Why this concept hits hard"
         }
       ]
@@ -184,14 +193,33 @@ ASS_COLOR_MAP = {
 }
 
 def clean_search_keyword(kw: str) -> str:
-    """Strips out clipart/illustration boilerplate prefixes to get pristine photographic/video queries."""
+    """Strips out clipart/illustration boilerplate prefixes and abstract keywords to get pristine photographic/video queries."""
     cleaned = re.sub(
         r"^(2d vector illustration of|minimalist icon graphic of|symbolic line art of|vector illustration of|minimalist icon of|illustration of|icon graphic of|icon of|graphic of|a photo of|photo of|picture of)\s+",
         "",
         kw.strip(),
         flags=re.IGNORECASE
     ).strip()
+    # If abstract terms present, convert to concrete human photography terms
+    if any(term in cleaned.lower() for term in ["calm mind", "stay calm", "patience", "emotional intelligence"]):
+        return "calm peaceful professional smiling deep breath modern office"
+    if any(term in cleaned.lower() for term in ["good communication", "clear speech", "communication dialogue"]):
+        return "business team effective communication meeting conference room"
+    if any(term in cleaned.lower() for term in ["standout employee", "best employee", "shining star"]):
+        return "successful professional employee smiling in modern corporate office"
     return cleaned if cleaned else kw.strip()
+
+INAPPROPRIATE_ALT_BLOCKLIST = [
+    "finger", "gesture", "middle", "rude", "obscene", "vulgar", "fuck", "hate", "sign", "hand sign"
+]
+
+NEGATIVE_ALT_WORDS = [
+    "depress", "depression", "sad", "cry", "crying", "tear", "alone", "homeless", "poverty", "misery", "suicide", "grief"
+]
+
+POSITIVE_QUERY_TRIGGERS = [
+    "calm", "patience", "peace", "success", "employee", "communication", "happy", "learn", "skill", "career", "gratitude", "productive"
+]
 
 def fetch_pexels_assets(
     edit_plan: dict,
@@ -199,19 +227,19 @@ def fetch_pexels_assets(
     download_dir: str = "assets/b_roll",
     default_asset_type: str = None
 ) -> dict:
-    """Downloads pristine, high-res 1080x1920 Pexels stock photos or vertical video clips for visual cues."""
+    """Downloads pristine, high-res 1080x1920 Pexels stock photos or vertical video clips for visual cues, strictly filtering out inappropriate/inverted images."""
     os.makedirs(download_dir, exist_ok=True)
     cues = edit_plan.get("visual_cues") or edit_plan.get("b_roll_cues") or []
     headers = {"Authorization": pexels_key}
 
     for idx, cue in enumerate(cues):
-        raw_keyword = cue.get("search_keyword", "abstract").strip()
+        raw_keyword = cue.get("search_keyword", "business professional").strip()
         keyword = clean_search_keyword(raw_keyword)
         asset_type = cue.get("asset_type") or default_asset_type or "photo"
         slug = re.sub(r"[^\w]", "_", keyword.lower())[:25]
         
         words = keyword.split()
-        search_terms = [keyword, " ".join(words[:3]) if len(words) > 3 else keyword, words[0]]
+        search_terms = [keyword, " ".join(words[:4]) if len(words) > 4 else keyword, " ".join(words[:2])]
 
         # Video asset search
         if asset_type == "video":
@@ -219,7 +247,7 @@ def fetch_pexels_assets(
             if not os.path.exists(dest_path) or os.path.getsize(dest_path) < 5000:
                 downloaded = False
                 for term in search_terms:
-                    url = f"https://api.pexels.com/videos/search?query={term}&per_page=3&orientation=portrait"
+                    url = f"https://api.pexels.com/videos/search?query={term}&per_page=5&orientation=portrait"
                     try:
                         r = requests.get(url, headers=headers, timeout=10)
                         if r.status_code == 200:
@@ -248,30 +276,65 @@ def fetch_pexels_assets(
                     # Fallback to photo if no video found
                     asset_type = "photo"
 
-        # Photo asset search (Pristine 1080x1920 high resolution)
+        # Photo asset search (Pristine 1080x1920 high resolution with strict content & sentiment verification)
         if asset_type != "video":
             dest_path = os.path.join(download_dir, f"asset_{idx}_{slug}.jpg")
             if not os.path.exists(dest_path) or os.path.getsize(dest_path) < 1000:
+                is_positive_query = any(pt in keyword.lower() for pt in POSITIVE_QUERY_TRIGGERS)
+                downloaded_photo = False
+                
                 for term in search_terms:
-                    url = f"https://api.pexels.com/v1/search?query={term}&per_page=3&orientation=portrait"
+                    if downloaded_photo:
+                        break
+                    url = f"https://api.pexels.com/v1/search?query={term}&per_page=5&orientation=portrait"
                     try:
                         r = requests.get(url, headers=headers, timeout=10)
                         if r.status_code == 200:
                             photos = r.json().get("photos", [])
-                            if photos:
-                                src = photos[0].get("src", {})
+                            for p in photos:
+                                alt_text = str(p.get("alt", "")).lower()
+                                
+                                # 1. Strict safety & obscenity filter
+                                if any(bad in alt_text for bad in INAPPROPRIATE_ALT_BLOCKLIST):
+                                    print(f"Filtering out inappropriate image candidate: '{alt_text}'")
+                                    continue
+                                
+                                # 2. Sentiment filter: reject depression/sad photos for positive/calm moments
+                                if is_positive_query and any(neg in alt_text for neg in NEGATIVE_ALT_WORDS):
+                                    print(f"Filtering out contradictory negative image for positive topic: '{alt_text}'")
+                                    continue
+                                
+                                src = p.get("src", {})
                                 orig = src.get("original")
                                 if orig:
                                     img_url = f"{orig}?auto=compress&cs=tinysrgb&fit=crop&w=1080&h=1920"
                                 else:
                                     img_url = src.get("large2x") or src.get("large")
+                                
                                 if img_url:
                                     img_data = requests.get(img_url, timeout=20).content
                                     with open(dest_path, "wb") as f:
                                         f.write(img_data)
+                                    downloaded_photo = True
+                                    print(f"Successfully downloaded approved image for cue {idx} ('{term}'): '{alt_text[:40]}'")
                                     break
                     except Exception as e:
                         print(f"Warning: Failed to fetch photo for '{term}': {e}")
+                
+                # Ultimate fallback to safe professional photo if all failed
+                if not downloaded_photo:
+                    safe_url = "https://api.pexels.com/v1/search?query=successful+professional+office&per_page=3&orientation=portrait"
+                    try:
+                        r = requests.get(safe_url, headers=headers, timeout=10)
+                        if r.status_code == 200:
+                            photos = r.json().get("photos", [])
+                            if photos:
+                                img_url = photos[0].get("src", {}).get("large2x") or photos[0].get("src", {}).get("original")
+                                if img_url:
+                                    with open(dest_path, "wb") as f:
+                                        f.write(requests.get(img_url, timeout=20).content)
+                    except Exception:
+                        pass
 
         cue["local_file"] = dest_path if os.path.exists(dest_path) else None
 

@@ -4,14 +4,14 @@
     {
       "id": 1,
       "start": 0.0,
-      "end": 2.22,
-      "text": "Let's look at the qualities"
+      "end": 2.16,
+      "text": "What makes a great"
     },
     {
       "id": 2,
-      "start": 2.22,
+      "start": 2.16,
       "end": 4.14,
-      "text": "of a best employee."
+      "text": "employee stand out?"
     },
     {
       "id": 3,
@@ -22,248 +22,218 @@
     {
       "id": 4,
       "start": 6.84,
-      "end": 8.52,
-      "text": "Psychologist."
+      "end": 8.76,
+      "text": "a Psychologist."
     },
     {
       "id": 5,
-      "start": 8.52,
-      "end": 12.38,
-      "text": "How should an employee,"
+      "start": 9.42,
+      "end": 12.06,
+      "text": "How should an employee"
     },
     {
       "id": 6,
-      "start": 12.38,
-      "end": 14.88,
-      "text": "that is, a person,"
+      "start": 12.06,
+      "end": 14.56,
+      "text": "conduct themselves"
     },
     {
       "id": 7,
-      "start": 14.88,
-      "end": 17.62,
-      "text": "behave at work?"
+      "start": 14.56,
+      "end": 16.92,
+      "text": "in their workplace?"
     },
     {
       "id": 8,
-      "start": 17.62,
-      "end": 20.06,
-      "text": "They must communicate well."
+      "start": 16.92,
+      "end": 19.32,
+      "text": "Communication must be clear."
     },
     {
       "id": 9,
-      "start": 20.06,
-      "end": 23.32,
+      "start": 19.32,
+      "end": 22.84,
       "text": "Speak properly with everyone."
     },
     {
       "id": 10,
-      "start": 23.32,
-      "end": 25.86,
-      "text": "Then, show gratitude"
+      "start": 23.46,
+      "end": 25.56,
+      "text": "Be grateful"
     },
     {
       "id": 11,
-      "start": 25.86,
-      "end": 27.68,
-      "text": "towards the job."
+      "start": 25.56,
+      "end": 27.52,
+      "text": "for your job."
     },
     {
       "id": 12,
-      "start": 27.68,
-      "end": 30.68,
-      "text": "Nowadays, many people"
+      "start": 27.52,
+      "end": 29.84,
+      "text": "Many people desperately"
     },
     {
       "id": 13,
-      "start": 30.68,
-      "end": 32.74,
-      "text": "desperately want a job,"
+      "start": 29.84,
+      "end": 31.96,
+      "text": "want a job,"
     },
     {
       "id": 14,
-      "start": 32.74,
-      "end": 35.14,
-      "text": "but once they get it,"
+      "start": 31.96,
+      "end": 34.02,
+      "text": "yet complain once hired."
     },
     {
       "id": 15,
-      "start": 35.14,
-      "end": 36.96,
-      "text": "they express dissatisfaction"
+      "start": 34.02,
+      "end": 36.42,
+      "text": "Discontent is common today."
     },
     {
       "id": 16,
-      "start": 36.96,
+      "start": 36.88,
       "end": 39.84,
-      "text": "about having that job."
+      "text": "Instead, thank God"
     },
     {
       "id": 17,
       "start": 39.84,
-      "end": 42.66,
-      "text": "Instead, be grateful to God"
+      "end": 42.12,
+      "text": "for this opportunity."
     },
     {
       "id": 18,
-      "start": 42.66,
-      "end": 45.48,
-      "text": "for giving this job."
+      "start": 42.12,
+      "end": 44.52,
+      "text": "Treat work as worship"
     },
     {
       "id": 19,
-      "start": 45.48,
-      "end": 47.98,
-      "text": "Treat your work like worship"
-    },
-    {
-      "id": 20,
-      "start": 47.98,
-      "end": 49.88,
+      "start": 44.52,
+      "end": 46.54,
       "text": "and show gratitude."
     },
     {
+      "id": 20,
+      "start": 46.86,
+      "end": 48.9,
+      "text": "Dedication is essential."
+    },
+    {
       "id": 21,
-      "start": 49.88,
-      "end": 52.32,
-      "text": "Along with that,"
+      "start": 48.9,
+      "end": 52.88,
+      "text": "Do your work without delays."
     },
     {
       "id": 22,
-      "start": 52.32,
-      "end": 54.12,
-      "text": "have true dedication."
+      "start": 53.64,
+      "end": 56.66,
+      "text": "Demonstrate your true potential"
     },
     {
       "id": 23,
-      "start": 54.12,
-      "end": 56.66,
-      "text": "Finish work without delays."
+      "start": 56.66,
+      "end": 59.88,
+      "text": "and prove your capability."
     },
     {
       "id": 24,
-      "start": 56.66,
-      "end": 59.98,
-      "text": "Demonstrate your full ability"
+      "start": 60.14,
+      "end": 62.74,
+      "text": "Keep learning new skills"
     },
     {
       "id": 25,
-      "start": 59.98,
-      "end": 62.46,
-      "text": "and prove your potential."
+      "start": 62.74,
+      "end": 65.5,
+      "text": "and practice patience."
     },
     {
       "id": 26,
-      "start": 62.46,
-      "end": 64.9,
-      "text": "Also, learn new skills"
+      "start": 65.5,
+      "end": 68.64,
+      "text": "Mentors may get annoyed,"
     },
     {
       "id": 27,
-      "start": 64.9,
-      "end": 67.24,
-      "text": "and cultivate patience."
+      "start": 68.64,
+      "end": 71.02,
+      "text": "people have moods."
     },
     {
       "id": 28,
-      "start": 67.24,
-      "end": 70.38,
-      "text": "Trainers may get annoyed,"
+      "start": 71.02,
+      "end": 73.12,
+      "text": "Stay calm around them,"
     },
     {
       "id": 29,
-      "start": 70.38,
-      "end": 72.82,
-      "text": "scold you, or get irritated."
+      "start": 73.12,
+      "end": 75.72,
+      "text": "absorb the knowledge,"
     },
     {
       "id": 30,
-      "start": 72.82,
-      "end": 75.64,
-      "text": "Stay patient with them,"
-    },
-    {
-      "id": 31,
-      "start": 75.64,
-      "end": 78.46,
-      "text": "learn your work thoroughly,"
-    },
-    {
-      "id": 32,
-      "start": 78.46,
-      "end": 81.34,
+      "start": 75.72,
+      "end": 77.92,
       "text": "and develop your skills."
     },
     {
+      "id": 31,
+      "start": 78.44,
+      "end": 81.36,
+      "text": "When you upskill yourself,"
+    },
+    {
+      "id": 32,
+      "start": 81.36,
+      "end": 84.88,
+      "text": "job passion naturally rises."
+    },
+    {
       "id": 33,
-      "start": 81.34,
-      "end": 84.14,
-      "text": "Once skills develop,"
+      "start": 85.04,
+      "end": 87.72,
+      "text": "Whatever your job role,"
     },
     {
       "id": 34,
-      "start": 84.14,
-      "end": 86.82,
-      "text": "interest in the job"
+      "start": 87.72,
+      "end": 90.62,
+      "text": "nurturing these habits"
     },
     {
       "id": 35,
-      "start": 86.82,
-      "end": 88.82,
-      "text": "naturally increases."
+      "start": 90.62,
+      "end": 93.36,
+      "text": "sparks genuine love for work."
     },
     {
       "id": 36,
-      "start": 88.82,
-      "end": 91.24,
-      "text": "Any employee who"
+      "start": 93.36,
+      "end": 96.06,
+      "text": "Love what you do,"
     },
     {
       "id": 37,
-      "start": 91.24,
-      "end": 93.38,
-      "text": "nurtures these qualities"
+      "start": 96.06,
+      "end": 99.22,
+      "text": "embrace every challenge,"
     },
     {
       "id": 38,
-      "start": 93.38,
-      "end": 95.8,
-      "text": "will automatically"
+      "start": 99.22,
+      "end": 101.9,
+      "text": "and you will easily"
     },
     {
       "id": 39,
-      "start": 95.8,
-      "end": 98.24,
-      "text": "love their job."
-    },
-    {
-      "id": 40,
-      "start": 98.24,
-      "end": 100.74,
-      "text": "Embrace every challenge"
-    },
-    {
-      "id": 41,
-      "start": 100.74,
-      "end": 103.14,
-      "text": "in your job willingly."
-    },
-    {
-      "id": 42,
-      "start": 103.14,
-      "end": 105.88,
-      "text": "When you do that,"
-    },
-    {
-      "id": 43,
-      "start": 105.88,
-      "end": 108.62,
-      "text": "whatever position you desire,"
-    },
-    {
-      "id": 44,
-      "start": 108.62,
-      "end": 111.36,
-      "text": "you can easily achieve."
+      "start": 101.9,
+      "end": 104.9,
+      "text": "reach your dream position."
     }
   ]
 }

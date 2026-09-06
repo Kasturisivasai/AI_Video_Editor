@@ -1,128 +1,124 @@
 {
-  "hook_segment": {
-    "start": 27.68,
-    "end": 35.14,
-    "reason": "Highlights a relatable workplace contradiction that creates instant curiosity and audience engagement."
-  },
+  "hook_segment": null,
   "visual_cues": [
     {
-      "start": 0.5,
-      "end": 4.0,
-      "search_keyword": "successful professional employee smiling in modern corporate office",
+      "start": 1.0,
+      "end": 4.5,
+      "search_keyword": "confident smiling employee standing modern bright office",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Establishes topic of ideal employee qualities",
-      "local_file": "assets/b_roll\\asset_0_successful_professional_e.jpg"
+      "reason": "Visualizes a standout professional employee embodying career excellence",
+      "local_file": "assets/b_roll\\asset_0_confident_smiling_employe.jpg"
     },
     {
-      "start": 17.5,
-      "end": 21.0,
-      "search_keyword": "business team effective communication meeting conference room",
+      "start": 17.0,
+      "end": 20.5,
+      "search_keyword": "smiling corporate team meeting discussing communication office",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Visualizes workplace communication",
-      "local_file": "assets/b_roll\\asset_1_business_team_effective_c.jpg"
+      "reason": "Depicts positive, effective workplace dialogue and clear communication",
+      "local_file": "assets/b_roll\\asset_1_smiling_corporate_team_me.jpg"
     },
     {
-      "start": 30.5,
-      "end": 34.0,
-      "search_keyword": "frustrated office worker looking at laptop screen desk",
+      "start": 26.0,
+      "end": 29.5,
+      "search_keyword": "grateful smiling businesswoman working happy desk office",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Depicts job dissatisfaction and workplace stress",
-      "local_file": "assets/b_roll\\asset_2_frustrated_office_worker_.jpg"
+      "reason": "Highlights workplace gratitude and appreciation for one's job role",
+      "local_file": "assets/b_roll\\asset_2_grateful_smiling_business.jpg"
     },
     {
-      "start": 45.0,
-      "end": 48.5,
-      "search_keyword": "dedicated worker focused on computer modern corporate office",
+      "start": 42.0,
+      "end": 45.5,
+      "search_keyword": "dedicated professional worker focused smiling laptop workplace",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Illustrates work dedication and focus",
-      "local_file": "assets/b_roll\\asset_3_dedicated_worker_focused_.jpg"
+      "reason": "Illustrates commitment and treating work with reverence and sincerity",
+      "local_file": "assets/b_roll\\asset_3_dedicated_professional_wo.jpg"
     },
     {
-      "start": 54.0,
-      "end": 57.5,
-      "search_keyword": "businessman organizing task list productivity deadline desk",
+      "start": 53.5,
+      "end": 57.0,
+      "search_keyword": "successful young professional smiling presenting boardroom meeting",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Represents efficiency and completing work without delay",
-      "local_file": "assets/b_roll\\asset_4_businessman_organizing_ta.jpg"
+      "reason": "Reflects an employee showcasing true potential and competence",
+      "local_file": "assets/b_roll\\asset_4_successful_young_professi.jpg"
     },
     {
-      "start": 67.0,
-      "end": 70.5,
-      "search_keyword": "stressed employee receiving feedback manager office discussion",
+      "start": 62.0,
+      "end": 65.5,
+      "search_keyword": "smiling employee learning online course computer bright office",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Shows workplace training tension and pressure",
-      "local_file": "assets/b_roll\\asset_5_stressed_employee_receivi.jpg"
+      "reason": "Represents upskilling and continuous learning in a modern corporate setting",
+      "local_file": "assets/b_roll\\asset_5_smiling_employee_learning.jpg"
     },
     {
-      "start": 78.0,
-      "end": 81.5,
-      "search_keyword": "professional learning new skills online training laptop",
+      "start": 71.0,
+      "end": 74.5,
+      "search_keyword": "peaceful calm professional person smiling deep breath office",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Highlights skill development and learning",
-      "local_file": "assets/b_roll\\asset_6_professional_learning_new.jpg"
+      "reason": "Shows composed emotional regulation, composure, and patience under pressure",
+      "local_file": "assets/b_roll\\asset_6_peaceful_calm_professiona.jpg"
     },
     {
-      "start": 98.0,
-      "end": 101.5,
-      "search_keyword": "confident employee facing business challenge presentation",
+      "start": 81.5,
+      "end": 85.0,
+      "search_keyword": "enthusiastic businesswoman working passionately laptop modern workplace",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Visualizes embracing work challenges",
-      "local_file": "assets/b_roll\\asset_7_confident_employee_facing.jpg"
+      "reason": "Embodies passion and positive energy blossoming through skill growth",
+      "local_file": "assets/b_roll\\asset_7_enthusiastic_businesswoma.jpg"
     },
     {
-      "start": 108.0,
-      "end": 111.3,
-      "search_keyword": "ambitious corporate executive standing proudly office view success",
+      "start": 96.5,
+      "end": 100.0,
+      "search_keyword": "proud smiling executive looking out office window career success",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Emphasizes career achievement and reaching goal positions",
-      "local_file": "assets/b_roll\\asset_8_ambitious_corporate_execu.jpg"
+      "reason": "Visualizes career triumph, fulfillment, and reaching long-term professional aspirations",
+      "local_file": "assets/b_roll\\asset_8_proud_smiling_executive_l.jpg"
     }
   ],
   "punch_ins": [
     {
-      "start": 2.2,
-      "end": 4.1,
-      "callout_text": "BEST EMPLOYEE",
-      "reason": "Establishes core topic"
+      "start": 17.0,
+      "end": 19.0,
+      "callout_text": "CLEAR COMMUNICATION",
+      "reason": "Emphasizes the foundational skill required for workplace effectiveness"
     },
     {
-      "start": 17.6,
-      "end": 19.6,
-      "callout_text": "COMMUNICATION",
-      "reason": "Punches key professional trait"
+      "start": 23.5,
+      "end": 25.5,
+      "callout_text": "BE GRATEFUL",
+      "reason": "Reinforces the psychological shift toward career appreciation"
     },
     {
-      "start": 35.1,
-      "end": 37.0,
-      "callout_text": "DISSATISFACTION",
-      "reason": "Highlights negative emotion to avoid"
-    },
-    {
-      "start": 52.3,
-      "end": 54.1,
+      "start": 46.8,
+      "end": 48.8,
       "callout_text": "DEDICATION",
-      "reason": "Punches primary productivity factor"
+      "reason": "Punches the core virtue of professional diligence and work ethic"
     },
     {
-      "start": 65.5,
-      "end": 67.2,
+      "start": 56.6,
+      "end": 58.6,
+      "callout_text": "TRUE POTENTIAL",
+      "reason": "Inspires viewers to demonstrate their full capability and value"
+    },
+    {
+      "start": 64.0,
+      "end": 66.0,
       "callout_text": "PATIENCE",
-      "reason": "Emphasizes resilience under stress"
+      "reason": "Highlights emotional intelligence and composure when navigating office dynamics"
     },
     {
-      "start": 108.6,
-      "end": 110.8,
-      "callout_text": "SUCCESS",
-      "reason": "Strong concluding power word"
+      "start": 101.9,
+      "end": 103.9,
+      "callout_text": "DREAM POSITION",
+      "reason": "Provides an inspiring climax focusing on ultimate career achievement"
     }
   ]
 }
