@@ -6,3 +6,4 @@ requests
 imageio-ffmpeg
 python-dotenv
 numpy
+pandas
