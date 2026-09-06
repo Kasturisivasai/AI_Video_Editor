@@ -46,6 +46,69 @@ GEMINI_MODEL_CANDIDATES = [
     "gemini-3.5-flash-lite"
 ]
 
+def robust_json_parse(text: str) -> dict:
+    """Robustly parses JSON from LLM responses, repairing common syntax flaws like trailing commas, comments, unquoted keys, single quotes, and markdown wrappers."""
+    if not text:
+        raise ValueError("Empty response from LLM")
+    
+    # 1. Strip markdown fences and whitespace
+    clean = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
+    clean = re.sub(r"```$", "", clean.strip(), flags=re.MULTILINE).strip()
+    
+    # Fast path: try standard json.loads
+    try:
+        return json.loads(clean)
+    except Exception:
+        pass
+
+    # 2. Extract outermost JSON object or array
+    match = re.search(r"(\{.*\}|\[.*\])", clean, re.DOTALL)
+    if match:
+        clean = match.group(1)
+        
+    try:
+        return json.loads(clean)
+    except Exception:
+        pass
+
+    # 3. Try json_repair (specialized library for broken LLM JSON)
+    try:
+        import json_repair
+        repaired = json_repair.loads(clean)
+        if isinstance(repaired, (dict, list)):
+            return repaired
+    except Exception:
+        pass
+
+    # 4. Remove single-line comments (// ...) and block comments (/* ... */)
+    clean = re.sub(r"//.*$", "", clean, flags=re.MULTILINE)
+    clean = re.sub(r"/\*.*?\*/", "", clean, flags=re.DOTALL)
+    
+    # 5. Remove trailing commas before } or ]
+    clean = re.sub(r",\s*([}\]])", r"\1", clean)
+    clean = re.sub(r",\s*\n\s*([}\]])", r"\n\1", clean)
+    
+    try:
+        return json.loads(clean)
+    except Exception:
+        pass
+
+    # 6. Fallback to ast.literal_eval for python-formatted dicts
+    try:
+        import ast
+        val = ast.literal_eval(clean)
+        if isinstance(val, (dict, list)):
+            return val
+    except Exception:
+        pass
+
+    # 7. Final attempt with json_repair
+    try:
+        import json_repair
+        return json_repair.loads(clean)
+    except Exception:
+        return json.loads(clean)
+
 def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, vocab_hints: str = "") -> dict:
     """Uses resilient Gemini models with auto-fallback to transcribe and translate audio into concise English subtitle segments."""
     genai.configure(api_key=api_key, transport="rest")
@@ -70,6 +133,7 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, 
     - Keep each segment short and punchy: strictly 3 to 6 words (under 30 characters).
     - Accurately timestamp start and end in seconds (e.g., 0.8 to 4.2).
     - Cover the entire speech timeline from beginning to end without gaps or skipping.
+    - Output strict standard JSON without trailing commas or comments.
     
     Return strict JSON matching this schema:
     {{
@@ -85,8 +149,7 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, 
             print(f"Attempting transcription with model '{model_name}'...")
             model = genai.GenerativeModel(model_name, generation_config={"response_mime_type": "application/json"})
             response = model.generate_content([{"mime_type": "audio/wav", "data": audio_bytes}, prompt])
-            clean_json = response.text.strip().removeprefix("```json").removesuffix("```").strip()
-            data = json.loads(clean_json)
+            data = robust_json_parse(response.text)
             if isinstance(data, list):
                 data = {"segments": data}
             print(f"Transcription successful using model '{model_name}' ({len(data.get('segments', []))} segments)")
@@ -156,6 +219,7 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
         }
       ]
     }
+    CRITICAL: Output strict standard JSON without comments, single quotes, or trailing commas.
     Return ONLY valid JSON.
     """
     last_err = None
@@ -164,8 +228,7 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
             print(f"Attempting editorial planning with model '{model_name}'...")
             model = genai.GenerativeModel(model_name, generation_config={"response_mime_type": "application/json"})
             response = model.generate_content([prompt, json.dumps(transcript_data)])
-            clean_json = response.text.strip().removeprefix("```json").removesuffix("```").strip()
-            data = json.loads(clean_json)
+            data = robust_json_parse(response.text)
             print(f"Editorial plan generated successfully using model '{model_name}' ({len(data.get('visual_cues', []))} visual cues, {len(data.get('punch_ins', []))} punch callouts)")
             return data
         except Exception as e:

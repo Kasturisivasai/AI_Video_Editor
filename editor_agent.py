@@ -3,6 +3,7 @@ import os
 import google.generativeai as genai
 
 from dotenv import load_dotenv
+from pipeline import robust_json_parse
 
 load_dotenv()
 
@@ -18,7 +19,8 @@ GEMINI_MODEL_CANDIDATES = [
     "gemini-3.5-flash",
     "gemini-flash-latest",
     "gemini-3.7-flash",
-    "gemini-3.5-flash-lite"
+    "gemini-3.5-flash-lite",
+    "gemini-2.5-flash"
 ]
 
 def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
@@ -101,8 +103,7 @@ def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
                 generation_config={"response_mime_type": "application/json"}
             )
             response = model.generate_content([prompt, json.dumps(transcript_data)])
-            clean_json = response.text.strip().removeprefix('```json').removesuffix('```').strip()
-            edit_plan = json.loads(clean_json)
+            edit_plan = robust_json_parse(response.text)
 
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(edit_plan, f, indent=2)

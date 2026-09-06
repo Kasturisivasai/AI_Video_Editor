@@ -41,8 +41,8 @@ def transcribe_with_gemini(audio_path="temp_audio.wav", output_path="transcript_
     response = model.generate_content([{"mime_type": "audio/wav", "data": audio_bytes}, prompt])
     
     try:
-        clean_json = response.text.strip().removeprefix("```json").removesuffix("```").strip()
-        parsed = json.loads(clean_json)
+        from pipeline import robust_json_parse
+        parsed = robust_json_parse(response.text)
         if isinstance(parsed, list):
             data = {"language": "te", "segments": parsed}
         else:

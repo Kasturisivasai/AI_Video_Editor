@@ -30,8 +30,8 @@ def improve_translation(input_path="transcript.json", output_path="transcript_en
     response = None
     try:
         response = model.generate_content([prompt, json.dumps(data["segments"])])
-        clean_json = response.text.strip().removeprefix('```json').removesuffix('```').strip()
-        translated_segments = json.loads(clean_json)
+        from pipeline import robust_json_parse
+        translated_segments = robust_json_parse(response.text)
         
         data["segments"] = translated_segments
         
