@@ -2,61 +2,87 @@
   "hook_segment": null,
   "visual_cues": [
     {
-      "start": 13.5,
-      "end": 17.5,
-      "search_keyword": "successful young corporate professional modern office",
-      "asset_type": "photo",
-      "reason": "Illustrates the talented young professional getting hired at a top company",
-      "local_file": "assets/b_roll\\asset_0_successful_young_corporat.jpg"
+      "start": 0.5,
+      "end": 4.1,
+      "search_keyword": "2d vector illustration of toxic workplace boss and employee conflict",
+      "asset_type": "illustration",
+      "reason": "Visually introduces the core theme of toxic managers and workplace dynamics",
+      "local_file": "assets/b_roll\\asset_0_2d_vector_illustration_of.jpg"
     },
     {
-      "start": 34.0,
-      "end": 38.0,
-      "search_keyword": "career promotion salary hike wealth graph",
-      "asset_type": "photo",
-      "reason": "Visually represents his high performance and rapid income growth",
-      "local_file": "assets/b_roll\\asset_1_career_promotion_salary_h.jpg"
+      "start": 14.8,
+      "end": 18.5,
+      "search_keyword": "2d vector illustration of young professional joining multinational corporate company",
+      "asset_type": "illustration",
+      "reason": "Represents the young prodigy securing a corporate MNC job",
+      "local_file": "assets/b_roll\\asset_1_2d_vector_illustration_of.jpg"
     },
     {
-      "start": 44.5,
-      "end": 48.5,
-      "search_keyword": "toxic workplace harassment bullying colleagues",
-      "asset_type": "photo",
-      "reason": "Depicts workplace jealousy and hostile behavior from senior colleagues",
-      "local_file": "assets/b_roll\\asset_2_toxic_workplace_harassmen.jpg"
+      "start": 33.2,
+      "end": 37.0,
+      "search_keyword": "2d vector illustration of salary growth chart with upward arrow",
+      "asset_type": "illustration",
+      "reason": "Illustrates rapid career growth and high salary performance",
+      "local_file": "assets/b_roll\\asset_2_2d_vector_illustration_of.jpg"
     },
     {
-      "start": 54.5,
-      "end": 58.5,
-      "search_keyword": "man suffering depression mental stress burnout",
-      "asset_type": "photo",
-      "reason": "Captures the emotional toll and severe psychological distress",
-      "local_file": "assets/b_roll\\asset_3_man_suffering_depression_.jpg"
+      "start": 41.0,
+      "end": 44.8,
+      "search_keyword": "minimalist icon graphic of jealousy and gossip among colleagues",
+      "asset_type": "illustration",
+      "reason": "Depicts peer envy and toxic criticism from older colleagues",
+      "local_file": "assets/b_roll\\asset_3_minimalist_icon_graphic_o.jpg"
     },
     {
-      "start": 66.5,
-      "end": 70.5,
-      "search_keyword": "dark oppressive corporate office environment",
-      "asset_type": "photo",
-      "reason": "Emphasizes the damaging impact of a toxic work culture",
-      "local_file": "assets/b_roll\\asset_4_dark_oppressive_corporate.jpg"
+      "start": 52.5,
+      "end": 56.2,
+      "search_keyword": "2d vector illustration of mental stress depression silhouette head",
+      "asset_type": "illustration",
+      "reason": "Highlights the emotional fallout and severe mental depression",
+      "local_file": "assets/b_roll\\asset_4_2d_vector_illustration_of.jpg"
+    },
+    {
+      "start": 67.5,
+      "end": 71.0,
+      "search_keyword": "2d vector illustration of toxic hostile workplace environment",
+      "asset_type": "illustration",
+      "reason": "Symbolizes the negative impact of an abusive professional ecosystem",
+      "local_file": "assets/b_roll\\asset_5_2d_vector_illustration_of.jpg"
+    },
+    {
+      "start": 80.0,
+      "end": 83.8,
+      "search_keyword": "minimalist icon graphic of psychological burnout and shattered career",
+      "asset_type": "illustration",
+      "reason": "Emphasizes the devastating long-term impact on mental well-being",
+      "local_file": "assets/b_roll\\asset_6_minimalist_icon_graphic_o.jpg"
     }
   ],
   "punch_ins": [
     {
-      "start": 2.4,
-      "end": 4.4,
-      "reason": "TOXIC MANAGERS"
+      "start": 2.1,
+      "end": 4.12,
+      "reason": "TOXIC MANAGERS & EMPLOYEES"
     },
     {
-      "start": 38.0,
-      "end": 40.0,
-      "reason": "EARNED TWICE AS MUCH"
+      "start": 38.38,
+      "end": 40.5,
+      "reason": "EARNED 2X MORE"
     },
     {
-      "start": 55.8,
-      "end": 57.8,
-      "reason": "DEEP DEPRESSION"
+      "start": 41.0,
+      "end": 43.0,
+      "reason": "PEER JEALOUSY"
+    },
+    {
+      "start": 52.88,
+      "end": 55.0,
+      "reason": "SEVERE DEPRESSION"
+    },
+    {
+      "start": 80.26,
+      "end": 82.8,
+      "reason": "DEVASTATING IMPACT"
     }
   ]
 }

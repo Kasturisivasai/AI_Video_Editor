@@ -1,5 +1,7 @@
+import json
 import os
 import re
+import shutil
 import tempfile
 import pandas as pd
 import streamlit as st
@@ -125,14 +127,30 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("#### Subtitle Options")
+    st.markdown("#### Subtitle & Visual Positioning Options")
+    sub_font_size_pt = st.slider(
+        "Subtitle Font Size (pt)",
+        min_value=16,
+        max_value=32,
+        value=22,
+        step=1,
+        help="Default 22pt (+1 point increased for maximum clarity)."
+    )
     sub_margin_v = st.slider(
         "Subtitle Vertical Position (px from bottom)",
         min_value=15,
         max_value=250,
         value=55,
-        step=10,
+        step=5,
         help="55px places subtitles cleanly across the lower desk line below the nameplate."
+    )
+    card_y_pct = st.slider(
+        "Visual Picture Position (% from top)",
+        min_value=8,
+        max_value=25,
+        value=14,
+        step=1,
+        help="14% moves pictures up by 3 points (clearing the subject's face and hair completely)."
     )
 
 # Main Hero Header
@@ -150,14 +168,34 @@ uploaded_file = st.file_uploader(
     help="Upload vertical (9:16) or standard talking-head video."
 )
 
+raw_video_path = None
+output_video_path = None
+active_file_name = None
+
 if uploaded_file is not None:
     temp_dir = tempfile.mkdtemp()
     raw_video_path = os.path.join(temp_dir, "raw_input.mp4")
     output_video_path = os.path.join(temp_dir, "final_edited_video.mp4")
-    
     with open(raw_video_path, "wb") as f:
         f.write(uploaded_file.read())
+    active_file_name = uploaded_file.name
+elif os.path.exists("VID-20260904-WA0005.mp4"):
+    st.info("💡 **Active Workspace Video Loaded**: `VID-20260904-WA0005.mp4`")
+    raw_video_path = "VID-20260904-WA0005.mp4"
+    output_video_path = "final_edited_video.mp4"
+    active_file_name = "VID-20260904-WA0005.mp4"
+    if "processed_video" not in st.session_state and os.path.exists("final_edited_video.mp4"):
+        st.session_state["processed_video"] = "final_edited_video.mp4"
+        st.session_state["current_file"] = active_file_name
+        st.session_state["output_path"] = "final_edited_video.mp4"
+        if os.path.exists("transcript_english.json"):
+            with open("transcript_english.json", "r", encoding="utf-8") as f:
+                st.session_state["transcript_data"] = json.load(f)
+        if os.path.exists("edit_plan.json"):
+            with open("edit_plan.json", "r", encoding="utf-8") as f:
+                st.session_state["edit_plan"] = json.load(f)
 
+if raw_video_path is not None:
     col1, col2 = st.columns(2)
     
     with col1:
@@ -168,7 +206,7 @@ if uploaded_file is not None:
         st.markdown("### 🎬 Enhanced Output")
         
         # Check if already processed in this session
-        if "processed_video" not in st.session_state or st.session_state.get("current_file") != uploaded_file.name:
+        if "processed_video" not in st.session_state or st.session_state.get("current_file") != active_file_name:
             st.info("Set any specific proper nouns or highlight pop-out words below, then click to generate.")
             
             h_col1, h_col2 = st.columns(2)
@@ -205,11 +243,13 @@ if uploaded_file is not None:
                             vocab_hints=vocab_hints,
                             highlight_words=highlight_words,
                             sub_margin_v=sub_margin_v,
+                            sub_font_size=sub_font_size_pt,
+                            card_y_pct=card_y_pct / 100.0,
                             font_name=font_choice,
                             progress_callback=update_progress
                         )
                         st.session_state["processed_video"] = final_path
-                        st.session_state["current_file"] = uploaded_file.name
+                        st.session_state["current_file"] = active_file_name
                         st.session_state["edit_plan"] = plan
                         st.session_state["transcript_data"] = transcript_data
                         st.session_state["punch_callouts"] = punch_callouts
@@ -389,6 +429,7 @@ if uploaded_file is not None:
                 st.session_state["transcript_data"],
                 ass_path=updated_ass,
                 font_name=chosen_font,
+                sub_font_size=sub_font_size_pt,
                 highlight_words=hl_words,
                 margin_v=sub_margin_v,
                 punch_callouts=updated_callouts
@@ -405,6 +446,11 @@ if uploaded_file is not None:
                 video_output_path=target_output,
                 margin_v=sub_margin_v
             )
+            if target_output != "final_edited_video.mp4":
+                try:
+                    shutil.copy(target_output, "final_edited_video.mp4")
+                except Exception:
+                    pass
             st.session_state["processed_video"] = target_output
             st.success("✨ Video updated and re-burned with your exact words in ~1.5 seconds!")
             st.rerun()

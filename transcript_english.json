@@ -3,201 +3,201 @@
   "segments": [
     {
       "id": 1,
-      "start": 0.08,
-      "end": 2.4,
+      "start": 0.0,
+      "end": 2.1,
       "text": "I recently handled a case"
     },
     {
       "id": 2,
-      "start": 2.4,
-      "end": 4.54,
+      "start": 2.1,
+      "end": 4.12,
       "text": "about toxic managers and employees."
     },
     {
       "id": 3,
-      "start": 4.54,
-      "end": 6.0,
-      "text": "I'll tell you about it."
+      "start": 4.12,
+      "end": 5.86,
+      "text": "I will share it now."
     },
     {
       "id": 4,
-      "start": 6.0,
+      "start": 5.86,
       "end": 8.52,
       "text": "I am Dr. Hyma Prasad, Psychologist."
     },
     {
       "id": 5,
-      "start": 9.92,
-      "end": 12.16,
-      "text": "A boy I know,"
+      "start": 8.52,
+      "end": 12.06,
+      "text": "A young boy I know,"
     },
     {
       "id": 6,
-      "start": 12.16,
+      "start": 12.06,
       "end": 14.88,
-      "text": "very smart at a young age,"
+      "text": "who was very smart,"
     },
     {
       "id": 7,
       "start": 14.88,
       "end": 17.58,
-      "text": "landed a great MNC job."
+      "text": "secured a job at an MNC"
     },
     {
       "id": 8,
-      "start": 18.24,
-      "end": 21.0,
-      "text": "While working his job,"
+      "start": 17.58,
+      "end": 19.5,
+      "text": "at a very young age."
     },
     {
       "id": 9,
-      "start": 21.0,
-      "end": 23.96,
-      "text": "the people around him"
+      "start": 19.5,
+      "end": 21.68,
+      "text": "While he was working there,"
     },
     {
       "id": 10,
-      "start": 23.96,
-      "end": 26.78,
-      "text": "were quite senior in age."
+      "start": 21.68,
+      "end": 24.28,
+      "text": "his colleagues at the workplace"
     },
     {
       "id": 11,
-      "start": 26.78,
-      "end": 29.5,
-      "text": "As he performed well"
+      "start": 24.28,
+      "end": 26.68,
+      "text": "were much older than him."
     },
     {
       "id": 12,
-      "start": 29.5,
-      "end": 32.72,
-      "text": "and continued his work,"
+      "start": 26.68,
+      "end": 29.58,
+      "text": "As he performed really well"
     },
     {
       "id": 13,
-      "start": 32.72,
-      "end": 35.74,
-      "text": "his salary kept getting hiked."
+      "start": 29.58,
+      "end": 33.28,
+      "text": "and delivered good results,"
     },
     {
       "id": 14,
-      "start": 35.8,
-      "end": 37.94,
-      "text": "Compared to them,"
+      "start": 33.28,
+      "end": 35.8,
+      "text": "his salary kept increasing."
     },
     {
       "id": 15,
-      "start": 37.94,
-      "end": 40.5,
-      "text": "he earned twice as much."
+      "start": 35.8,
+      "end": 38.38,
+      "text": "Compared to his peers,"
     },
     {
       "id": 16,
-      "start": 40.5,
-      "end": 42.18,
-      "text": "They grew jealous of him"
+      "start": 38.38,
+      "end": 40.82,
+      "text": "he earned twice as much."
     },
     {
       "id": 17,
-      "start": 42.18,
-      "end": 44.52,
-      "text": "and constantly criticized him."
+      "start": 40.82,
+      "end": 43.14,
+      "text": "This made them feel jealous,"
     },
     {
       "id": 18,
-      "start": 44.52,
-      "end": 47.46,
-      "text": "Right to his face,"
+      "start": 43.14,
+      "end": 45.48,
+      "text": "and they constantly criticized him."
     },
     {
       "id": 19,
-      "start": 47.46,
-      "end": 50.18,
-      "text": "they used vulgar language"
+      "start": 45.48,
+      "end": 47.78,
+      "text": "Right in front of him,"
     },
     {
       "id": 20,
-      "start": 50.18,
-      "end": 52.88,
-      "text": "and hurled abuses at him."
+      "start": 47.78,
+      "end": 50.4,
+      "text": "they used vulgar language"
     },
     {
       "id": 21,
-      "start": 53.04,
-      "end": 55.76,
-      "text": "Because of this,"
+      "start": 50.4,
+      "end": 52.88,
+      "text": "and verbally abused him."
     },
     {
       "id": 22,
-      "start": 55.76,
-      "end": 58.26,
-      "text": "he slipped into deep depression."
+      "start": 52.88,
+      "end": 55.6,
+      "text": "This pushed him into depression."
     },
     {
       "id": 23,
-      "start": 58.26,
-      "end": 60.16,
-      "text": "Then, he came to me."
+      "start": 55.6,
+      "end": 58.74,
+      "text": "Later, he came to consult me."
     },
     {
       "id": 24,
-      "start": 60.16,
-      "end": 63.54,
-      "text": "When we analyzed why"
+      "start": 58.74,
+      "end": 61.98,
+      "text": "When we analyzed"
     },
     {
       "id": 25,
-      "start": 63.54,
-      "end": 65.98,
-      "text": "he ended up like this,"
+      "start": 61.98,
+      "end": 64.9,
+      "text": "why he fell into this state,"
     },
     {
       "id": 26,
-      "start": 65.98,
-      "end": 68.96,
-      "text": "the surrounding work environment"
+      "start": 64.9,
+      "end": 67.76,
+      "text": "his surrounding environment"
     },
     {
       "id": 27,
-      "start": 68.96,
-      "end": 71.36,
-      "text": "had a massive effect on him."
+      "start": 67.76,
+      "end": 70.36,
+      "text": "had a massive negative impact."
     },
     {
       "id": 28,
-      "start": 71.36,
-      "end": 73.96,
-      "text": "He wanted to work happily,"
+      "start": 70.36,
+      "end": 72.84,
+      "text": "He joined to work happily,"
     },
     {
       "id": 29,
-      "start": 73.96,
-      "end": 76.22,
-      "text": "was a knowledgeable person,"
+      "start": 72.84,
+      "end": 74.92,
+      "text": "was highly knowledgeable,"
     },
     {
       "id": 30,
-      "start": 76.22,
-      "end": 78.44,
-      "text": "and friendly with everyone."
+      "start": 74.92,
+      "end": 77.22,
+      "text": "and mingled well with everyone."
     },
     {
       "id": 31,
-      "start": 78.44,
-      "end": 81.62,
-      "text": "Yet their intention to oust him"
+      "start": 77.22,
+      "end": 80.26,
+      "text": "Yet their intention to push him out"
     },
     {
       "id": 32,
-      "start": 81.62,
-      "end": 84.18,
-      "text": "deeply impacted his life."
+      "start": 80.26,
+      "end": 83.3,
+      "text": "created a devastating impact"
     },
     {
       "id": 33,
-      "start": 84.18,
-      "end": 87.16,
-      "text": "It left a severe mark."
+      "start": 83.3,
+      "end": 86.88,
+      "text": "on his entire life."
     }
   ]
 }

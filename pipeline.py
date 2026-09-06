@@ -304,6 +304,8 @@ def write_subtitles_ass(
     video_w: int = 478,
     video_h: int = 850,
     font_name: str = "Montserrat Black",
+    sub_font_size: int = None,
+    callout_font_size: int = None,
     highlight_words: str = "",
     margin_v: int = 55,
     punch_callouts: list = None,
@@ -317,8 +319,10 @@ def write_subtitles_ass(
     - Layer 0 (ReelSub): Lower desk dialogue subtitles with in-line gold keyword highlights
     - Layer 1 (PunchCallout): High-impact centered dynamic text cards
     """
-    sub_font_size = max(16, int(video_w * 0.044)) # ~21px
-    callout_font_size = max(24, int(video_w * 0.078)) # ~37px
+    if sub_font_size is None:
+        sub_font_size = max(17, int(video_w * 0.044) + 1) # ~22px (+1 point increase from 21px)
+    if callout_font_size is None:
+        callout_font_size = max(24, int(video_w * 0.078)) # ~37px
     
     header = f"""[Script Info]
 ScriptType: v4.00+
@@ -462,11 +466,11 @@ def create_card_pil(img_path, target_w=340, target_h=190, radius=18):
     canvas.paste(im, (pad, pad), mask)
     return canvas
 
-def make_animated_card_clip(img_path, duration, video_w, video_h):
-    """Builds a MoviePy clip with pop-in zoom entry, Ken Burns drift, in upper third safe zone."""
-    target_w = int(video_w * 0.72)
+def make_animated_card_clip(img_path, duration, video_w, video_h, card_y_pct: float = 0.14):
+    """Builds a MoviePy clip with pop-in zoom entry, Ken Burns drift, positioned in the upper safe zone above subject's head."""
+    target_w = int(video_w * 0.70)
     target_h = int(target_w * 0.5625)
-    y_center = int(video_h * 0.17) # Upper third safe zone above head
+    y_center = int(video_h * card_y_pct) # 0.14 moves pictures up by 3 points, well clear of subject's face/hair
     
     card_pil = create_card_pil(img_path, target_w, target_h)
     base_w, base_h = card_pil.size
@@ -609,6 +613,7 @@ def assemble_final_video(
     transcript_data: dict = None,
     highlight_words: str = "",
     sub_margin_v: int = 55,
+    card_y_pct: float = 0.14,
     punch_callouts: list = None,
     font_name: str = "Montserrat Black"
 ) -> str:
@@ -631,7 +636,7 @@ def assemble_final_video(
             print(f"Overlaying Upper Photo Card '{cue.get('search_keyword')}' at {start:.2f}s - {(start + duration):.2f}s...")
             
             if is_image:
-                card_clip = make_animated_card_clip(local_path, duration, combined.w, combined.h)
+                card_clip = make_animated_card_clip(local_path, duration, combined.w, combined.h, card_y_pct=card_y_pct)
                 card_clip = card_clip.set_start(start)
                 overlays.append(card_clip)
             else:
@@ -690,6 +695,8 @@ def run_pipeline(
     vocab_hints: str = "",
     highlight_words: str = "",
     sub_margin_v: int = 55,
+    sub_font_size: int = None,
+    card_y_pct: float = 0.14,
     punch_callouts: list = None,
     font_name: str = "Montserrat Black",
     progress_callback = None
@@ -740,6 +747,7 @@ def run_pipeline(
         video_w=vid_w,
         video_h=vid_h,
         font_name=font_name,
+        sub_font_size=sub_font_size,
         highlight_words=highlight_words,
         margin_v=sub_margin_v,
         punch_callouts=punch_callouts
@@ -756,6 +764,7 @@ def run_pipeline(
         transcript_data=transcript_data,
         highlight_words=highlight_words,
         sub_margin_v=sub_margin_v,
+        card_y_pct=card_y_pct,
         punch_callouts=punch_callouts,
         font_name=font_name
     )
