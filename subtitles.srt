@@ -1,132 +1,140 @@
 1
-00:00:00,000 --> 00:00:02,100
-I recently handled a case
+00:00:00,000 --> 00:00:02,500
+When should an employee
 
 2
-00:00:02,100 --> 00:00:04,120
-about toxic managers and employees.
+00:00:02,500 --> 00:00:04,180
+consult a psychologist
 
 3
-00:00:04,120 --> 00:00:05,860
-I will share it now.
+00:00:04,180 --> 00:00:05,920
+or a psychiatrist?
 
 4
-00:00:05,860 --> 00:00:08,520
-I am Dr. Hyma Prasad, Psychologist.
+00:00:05,920 --> 00:00:07,300
+Let's see.
 
 5
-00:00:08,520 --> 00:00:12,060
-A young boy I know,
+00:00:07,300 --> 00:00:09,380
+I am Dr. Hyma Prasad,
 
 6
-00:00:12,060 --> 00:00:14,880
-who was very smart,
+00:00:09,380 --> 00:00:10,960
+a Psychologist.
 
 7
-00:00:14,880 --> 00:00:17,580
-secured a job at an MNC
+00:00:10,960 --> 00:00:13,060
+How can an employee
 
 8
-00:00:17,580 --> 00:00:19,500
-at a very young age.
+00:00:13,060 --> 00:00:15,680
+know they are stressed?
 
 9
-00:00:19,500 --> 00:00:21,680
-While he was working there,
+00:00:15,680 --> 00:00:19,340
+If they were active earlier,
 
 10
-00:00:21,680 --> 00:00:24,280
-his colleagues at the workplace
+00:00:19,340 --> 00:00:22,000
+and after joining,
 
 11
-00:00:24,280 --> 00:00:26,680
-were much older than him.
+00:00:22,000 --> 00:00:24,280
+say within a month,
 
 12
-00:00:26,680 --> 00:00:29,580
-As he performed really well
+00:00:24,280 --> 00:00:25,860
+they start feeling dull,
 
 13
-00:00:29,580 --> 00:00:33,280
-and delivered good results,
+00:00:25,860 --> 00:00:28,340
+cannot work properly,
 
 14
-00:00:33,280 --> 00:00:35,800
-his salary kept increasing.
+00:00:28,340 --> 00:00:31,420
+cannot grasp anything assigned,
 
 15
-00:00:35,800 --> 00:00:38,380
-Compared to his peers,
+00:00:31,420 --> 00:00:34,000
+either sleeping too much
 
 16
-00:00:38,380 --> 00:00:40,820
-he earned twice as much.
+00:00:34,000 --> 00:00:36,400
+or having insomnia,
 
 17
-00:00:40,820 --> 00:00:43,140
-This made them feel jealous,
+00:00:36,400 --> 00:00:38,640
+forgetting skills
 
 18
-00:00:43,140 --> 00:00:45,480
-and they constantly criticized him.
+00:00:38,640 --> 00:00:41,340
+they already know,
 
 19
-00:00:45,480 --> 00:00:47,780
-Right in front of him,
+00:00:41,340 --> 00:00:43,860
+ignoring everything,
 
 20
-00:00:47,780 --> 00:00:50,400
-they used vulgar language
+00:00:43,860 --> 00:00:46,520
+unable to mingle with anyone,
 
 21
-00:00:50,400 --> 00:00:52,880
-and verbally abused him.
+00:00:46,520 --> 00:00:48,740
+loss of appetite
 
 22
-00:00:52,880 --> 00:00:55,600
-This pushed him into depression.
+00:00:48,740 --> 00:00:51,520
+or overeating,
 
 23
-00:00:55,600 --> 00:00:58,740
-Later, he came to consult me.
+00:00:51,520 --> 00:00:54,340
+as well as physiological issues
 
 24
-00:00:58,740 --> 00:01:01,980
-When we analyzed
+00:00:54,340 --> 00:00:56,660
+like severe gastritis,
 
 25
-00:01:01,980 --> 00:01:04,900
-why he fell into this state,
+00:00:56,660 --> 00:00:58,280
+constipation,
 
 26
-00:01:04,900 --> 00:01:07,760
-his surrounding environment
+00:00:58,280 --> 00:01:00,840
+or other physical ailments,
 
 27
-00:01:07,760 --> 00:01:10,360
-had a massive negative impact.
+00:01:00,840 --> 00:01:04,900
+which ruin concentration,
 
 28
-00:01:10,360 --> 00:01:12,840
-He joined to work happily,
+00:01:04,900 --> 00:01:07,580
+when you have these symptoms
 
 29
-00:01:12,840 --> 00:01:14,920
-was highly knowledgeable,
+00:01:07,580 --> 00:01:10,360
+and feel unable to work
 
 30
-00:01:14,920 --> 00:01:17,220
-and mingled well with everyone.
+00:01:10,360 --> 00:01:13,500
+properly at your workplace,
 
 31
-00:01:17,220 --> 00:01:20,260
-Yet their intention to push him out
+00:01:13,500 --> 00:01:15,800
+meeting a counselor
 
 32
-00:01:20,260 --> 00:01:23,300
-created a devastating impact
+00:01:15,800 --> 00:01:18,440
+and taking timely counseling
 
 33
-00:01:23,300 --> 00:01:26,880
-on his entire life.
+00:01:18,440 --> 00:01:21,360
+will help you recover easily
+
+34
+00:01:21,360 --> 00:01:23,740
+and become a great employee.
+
+35
+00:01:23,740 --> 00:01:26,000
+Thank you.
 

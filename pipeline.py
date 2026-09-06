@@ -13,7 +13,7 @@ if not hasattr(PIL.Image, "ANTIALIAS"):
     setattr(PIL.Image, "ANTIALIAS", PIL.Image.Resampling.LANCZOS)
 
 import google.generativeai as genai
-from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip
+from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip, ColorClip
 from moviepy.video.fx.crop import crop
 import imageio_ffmpeg
 from dotenv import load_dotenv
@@ -152,40 +152,105 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
             continue
     raise last_err
 
-def fetch_pexels_photos(edit_plan: dict, pexels_key: str = DEFAULT_PEXELS_KEY, download_dir: str = "assets/b_roll") -> dict:
-    """Downloads high-res Pexels stock photos for all visual cues in the plan."""
+ASS_COLOR_MAP = {
+    "Pure White": "&H00FFFFFF",
+    "Electric Gold": "&H0000E6FF",
+    "Neon Yellow": "&H0000FFFF",
+    "Crimson Red": "&H002020FF",
+    "Neon Cyan": "&H00FFFF00",
+    "Soft Yellow": "&H0075F2FF",
+    "Lime Green": "&H0032FF32",
+    "white": "&H00FFFFFF",
+    "gold": "&H0000E6FF",
+    "red": "&H002020FF",
+    "cyan": "&H00FFFF00",
+    "yellow": "&H0000FFFF",
+    "pure_white": "&H00FFFFFF",
+    "red_gold": "red_gold",
+    "Red + Gold": "red_gold"
+}
+
+def fetch_pexels_assets(
+    edit_plan: dict,
+    pexels_key: str = DEFAULT_PEXELS_KEY,
+    download_dir: str = "assets/b_roll",
+    default_asset_type: str = None
+) -> dict:
+    """Downloads high-res Pexels stock photos or vertical video clips for visual cues."""
     os.makedirs(download_dir, exist_ok=True)
     cues = edit_plan.get("visual_cues") or edit_plan.get("b_roll_cues") or []
     headers = {"Authorization": pexels_key}
 
     for idx, cue in enumerate(cues):
-        keyword = cue.get("search_keyword", "abstract")
-        slug = re.sub(r"[^\w]", "_", keyword.strip().lower())[:25]
-        dest_path = os.path.join(download_dir, f"asset_{idx}_{slug}.jpg")
+        keyword = cue.get("search_keyword", "abstract").strip()
+        asset_type = cue.get("asset_type") or default_asset_type or "photo"
+        slug = re.sub(r"[^\w]", "_", keyword.lower())[:25]
+        
+        words = keyword.split()
+        search_terms = [keyword, " ".join(words[:3]) if len(words) > 3 else keyword, words[0]]
 
-        if not os.path.exists(dest_path) or os.path.getsize(dest_path) < 1000:
-            words = keyword.split()
-            search_terms = [keyword, " ".join(words[:3]) if len(words) > 3 else keyword, words[0]]
-            for term in search_terms:
-                url = f"https://api.pexels.com/v1/search?query={term}&per_page=1"
-                try:
-                    r = requests.get(url, headers=headers, timeout=10)
-                    if r.status_code == 200:
-                        photos = r.json().get("photos", [])
-                        if photos:
-                            src = photos[0].get("src", {})
-                            img_url = src.get("large2x") or src.get("portrait") or src.get("large") or src.get("original")
-                            if img_url:
-                                img_data = requests.get(img_url, timeout=15).content
-                                with open(dest_path, "wb") as f:
-                                    f.write(img_data)
-                                break
-                except Exception as e:
-                    print(f"Warning: Failed to fetch photo for '{term}': {e}")
+        # Video asset search
+        if asset_type == "video":
+            dest_path = os.path.join(download_dir, f"asset_{idx}_{slug}.mp4")
+            if not os.path.exists(dest_path) or os.path.getsize(dest_path) < 5000:
+                downloaded = False
+                for term in search_terms:
+                    url = f"https://api.pexels.com/videos/search?query={term}&per_page=3&orientation=portrait"
+                    try:
+                        r = requests.get(url, headers=headers, timeout=10)
+                        if r.status_code == 200:
+                            videos = r.json().get("videos", [])
+                            if videos:
+                                v_files = videos[0].get("video_files", [])
+                                portrait_files = [f for f in v_files if f.get("width", 1) <= f.get("height", 1)]
+                                chosen = None
+                                for cand in portrait_files:
+                                    if cand.get("quality") in ["hd", "sd"]:
+                                        chosen = cand
+                                        break
+                                if not chosen and portrait_files:
+                                    chosen = portrait_files[0]
+                                if not chosen and v_files:
+                                    chosen = v_files[0]
+                                if chosen and chosen.get("link"):
+                                    v_data = requests.get(chosen["link"], timeout=25).content
+                                    with open(dest_path, "wb") as f:
+                                        f.write(v_data)
+                                    downloaded = True
+                                    break
+                    except Exception as e:
+                        print(f"Warning: Failed to fetch video for '{term}': {e}")
+                if not downloaded:
+                    # Fallback to photo if no video found
+                    asset_type = "photo"
+
+        # Photo/illustration asset search
+        if asset_type != "video":
+            dest_path = os.path.join(download_dir, f"asset_{idx}_{slug}.jpg")
+            if not os.path.exists(dest_path) or os.path.getsize(dest_path) < 1000:
+                for term in search_terms:
+                    url = f"https://api.pexels.com/v1/search?query={term}&per_page=1"
+                    try:
+                        r = requests.get(url, headers=headers, timeout=10)
+                        if r.status_code == 200:
+                            photos = r.json().get("photos", [])
+                            if photos:
+                                src = photos[0].get("src", {})
+                                img_url = src.get("large2x") or src.get("portrait") or src.get("large") or src.get("original")
+                                if img_url:
+                                    img_data = requests.get(img_url, timeout=15).content
+                                    with open(dest_path, "wb") as f:
+                                        f.write(img_data)
+                                    break
+                    except Exception as e:
+                        print(f"Warning: Failed to fetch photo for '{term}': {e}")
 
         cue["local_file"] = dest_path if os.path.exists(dest_path) else None
 
     return edit_plan
+
+# Alias for backwards compatibility
+fetch_pexels_photos = fetch_pexels_assets
 
 def format_srt_time(seconds: float) -> str:
     """Formats seconds into strict SRT timestamp format (HH:MM:SS,mmm)."""
@@ -224,25 +289,20 @@ NAME_INTRO_BLOCKLIST = {
 }
 
 def format_callout_ass_text(text: str, color_mode: str = "white") -> str:
-    """Formats center dynamic punch card text with ASS inline color tags (defaults to pure white with heavy stroke)."""
+    """Formats center dynamic punch card text with ASS inline color tags (supporting white, red+gold, red, gold, cyan)."""
     words = text.strip().upper().split()
     if not words:
         return ""
-    if color_mode in ["white", "pure_white"]:
-        return rf"{{\c&H00FFFFFF&}}{' '.join(words)}"
-    elif color_mode == "red_gold":
+    cm_lower = color_mode.strip().lower()
+    if cm_lower in ["red_gold", "red + gold"]:
         if len(words) >= 2:
             first = rf"{{\c&H002020FF&}}{words[0]}"
             rest = " ".join([rf"{{\c&H0000E6FF&}}{w}" for w in words[1:]])
             return f"{first} {rest}"
         else:
             return rf"{{\c&H0000E6FF&}}{words[0]}"
-    elif color_mode == "red":
-        return rf"{{\c&H002020FF&}}{' '.join(words)}"
-    elif color_mode == "gold":
-        return rf"{{\c&H0000E6FF&}}{' '.join(words)}"
-    else:
-        return rf"{{\c&H00FFFFFF&}}{' '.join(words)}"
+    hex_code = ASS_COLOR_MAP.get(color_mode, ASS_COLOR_MAP.get(cm_lower, "&H00FFFFFF"))
+    return rf"{{\c{hex_code}&}}{' '.join(words)}"
 
 def extract_curated_punch_callouts(edit_plan: dict, transcript_data: dict, highlight_words: str = "") -> list:
     """
@@ -309,12 +369,15 @@ def write_subtitles_ass(
     highlight_words: str = "",
     margin_v: int = 55,
     punch_callouts: list = None,
-    callout_margin_v: int = 340
+    callout_margin_v: int = 340,
+    sub_color: str = "Pure White",
+    sub_highlight_color: str = "Electric Gold",
+    callout_default_color: str = "Pure White"
 ) -> str:
     """
     Generates an ASS subtitle file matching the viral reel format:
     - Font: Montserrat Black / League Spartan (ultra-bold heavy sans-serif)
-    - All-caps pure white text with thick black outline (Outline=3.8 to 4.8)
+    - All-caps pure white or custom colored text with thick black outline (Outline=3.8 to 4.8)
     - Zero background container box (BorderStyle=1)
     - Layer 0 (ReelSub): Lower desk dialogue subtitles with in-line gold keyword highlights
     - Layer 1 (PunchCallout): High-impact centered dynamic text cards
@@ -323,6 +386,10 @@ def write_subtitles_ass(
         sub_font_size = max(17, int(video_w * 0.044) + 1) # ~22px (+1 point increase from 21px)
     if callout_font_size is None:
         callout_font_size = max(24, int(video_w * 0.078)) # ~37px
+
+    sub_hex = ASS_COLOR_MAP.get(sub_color, ASS_COLOR_MAP.get(sub_color.strip().lower(), "&H00FFFFFF"))
+    sub_hl_hex = ASS_COLOR_MAP.get(sub_highlight_color, ASS_COLOR_MAP.get(sub_highlight_color.strip().lower(), "&H0000E6FF"))
+    callout_hex = ASS_COLOR_MAP.get(callout_default_color, ASS_COLOR_MAP.get(callout_default_color.strip().lower(), "&H00FFFFFF"))
     
     header = f"""[Script Info]
 ScriptType: v4.00+
@@ -331,8 +398,8 @@ PlayResY: {video_h}
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: ReelSub,{font_name},{sub_font_size},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3.8,1.4,2,20,20,{margin_v},1
-Style: PunchCallout,{font_name},{callout_font_size},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,4.8,2.0,2,20,20,{callout_margin_v},1
+Style: ReelSub,{font_name},{sub_font_size},{sub_hex},&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3.8,1.4,2,20,20,{margin_v},1
+Style: PunchCallout,{font_name},{callout_font_size},{callout_hex},&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,4.8,2.0,2,20,20,{callout_margin_v},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -350,14 +417,14 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             end_str = format_ass_time(end_sec)
             text = seg["text"].strip().upper()
             
-            # Apply in-line keyword highlighting with ASS color tags (vibrant electric gold)
+            # Apply in-line keyword highlighting with ASS color tags
             for hw in hl_list:
                 pattern = re.compile(rf"\b({re.escape(hw.upper())})\b", re.IGNORECASE)
-                text = pattern.sub(r"{\\c&H0000E6FF&}\1{\\c&H00FFFFFF&}", text)
+                text = pattern.sub(rf"{{\\c{sub_hl_hex}&}}\1{{\\c{sub_hex}&}}", text)
 
             events.append(f"Dialogue: 0,{start_str},{end_str},ReelSub,,0,0,0,,{text}")
 
-    # Layer 1: Center Dynamic Text Cards (Pure white ultra-bold outlined typography)
+    # Layer 1: Center Dynamic Text Cards (Outlined typography)
     if punch_callouts:
         for callout in punch_callouts:
             if not callout.get("enabled", True):
@@ -367,7 +434,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 continue
             s_str = format_ass_time(float(callout["start"]))
             e_str = format_ass_time(float(callout["end"]))
-            styled_txt = format_callout_ass_text(raw_callout_txt, callout.get("color", "white"))
+            c_color = callout.get("color", callout_default_color)
+            styled_txt = format_callout_ass_text(raw_callout_txt, c_color)
             events.append(f"Dialogue: 1,{s_str},{e_str},PunchCallout,,0,0,0,,{styled_txt}")
 
     with open(ass_path, "w", encoding="utf-8") as f:
@@ -605,6 +673,70 @@ def make_reel_kinetic_word_clip(text: str, start: float, duration: float, video_
         pass
     return animated
 
+def make_fullscreen_broll_clip(asset_path: str, duration: float, video_w: int, video_h: int):
+    """
+    Builds a full-screen vertical 9:16 motion B-roll clip.
+    - If image: crops & scales to 9:16, applies smooth Ken Burns zoom (1.0 -> 1.08),
+      and soft crossfades at start and end.
+    - If video: loops/trims to duration, center crops to 9:16, strips audio, and adds soft crossfades.
+    """
+    is_image = asset_path.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
+    if is_image:
+        im = Image.open(asset_path).convert('RGB')
+        target_aspect = video_w / video_h
+        im_aspect = im.width / im.height
+        if im_aspect > target_aspect:
+            new_w = int(im.height * target_aspect)
+            left = (im.width - new_w) // 2
+            im = im.crop((left, 0, left + new_w, im.height))
+        else:
+            new_h = int(im.width / target_aspect)
+            top = (im.height - new_h) // 2
+            im = im.crop((0, top, im.width, top + new_h))
+        im = im.resize((video_w, video_h), Image.Resampling.LANCZOS)
+        
+        base_np = np.array(im)
+        clip = ImageClip(base_np).set_duration(duration)
+        
+        def zoom_scale(t):
+            return 1.0 + 0.08 * (t / max(0.1, duration))
+            
+        def center_pos(t):
+            s = zoom_scale(t)
+            cur_w = video_w * s
+            cur_h = video_h * s
+            return ((video_w - cur_w) / 2, (video_h - cur_h) / 2)
+            
+        animated = clip.resize(zoom_scale).set_position(center_pos)
+        try:
+            animated = animated.crossfadein(0.18).crossfadeout(0.18)
+        except Exception:
+            pass
+        base = ColorClip(size=(video_w, video_h), color=(0, 0, 0)).set_duration(duration)
+        return CompositeVideoClip([base, animated], size=(video_w, video_h))
+    else:
+        # Video asset
+        v_clip = VideoFileClip(asset_path).without_audio()
+        if v_clip.duration is not None and v_clip.duration < duration:
+            v_clip = v_clip.loop(duration=duration)
+        else:
+            v_clip = v_clip.subclip(0, duration)
+            
+        # Fit to 9:16
+        clip_aspect = v_clip.w / v_clip.h
+        target_aspect = video_w / video_h
+        if clip_aspect > target_aspect:
+            v_clip = v_clip.resize(height=video_h)
+        else:
+            v_clip = v_clip.resize(width=video_w)
+            
+        v_clip = crop(v_clip, x_center=v_clip.w / 2, y_center=v_clip.h / 2, width=video_w, height=video_h)
+        try:
+            v_clip = v_clip.crossfadein(0.18).crossfadeout(0.18)
+        except Exception:
+            pass
+        return v_clip
+
 def assemble_final_video(
     raw_video_path: str,
     edit_plan: dict,
@@ -615,17 +747,20 @@ def assemble_final_video(
     sub_margin_v: int = 55,
     card_y_pct: float = 0.14,
     punch_callouts: list = None,
-    font_name: str = "Montserrat Black"
+    font_name: str = "Montserrat Black",
+    visual_display_mode: str = "fullscreen"
 ) -> str:
-    """Composites raw video with upper animated photo cards, and burns ASS subtitles + kinetic callouts."""
+    """Composites raw video with full-screen motion B-roll cuts or upper photo cards, and burns ASS subtitles + kinetic callouts."""
     main_clip = VideoFileClip(raw_video_path)
     combined = main_clip
 
     visual_cues = edit_plan.get("visual_cues") or edit_plan.get("b_roll_cues") or []
     overlays = [combined]
 
-    # Layer Upper Photo Cards (Exclusively in upper third safe zone above head)
+    # Layer Visual Cues (Full-Screen Cutaways or Upper Photo Cards)
     for idx, cue in enumerate(visual_cues):
+        if not cue.get("enabled", True):
+            continue
         local_path = cue.get("local_file")
         start = float(cue.get("start", 0))
         end = float(cue.get("end", 0))
@@ -633,25 +768,22 @@ def assemble_final_video(
 
         if local_path and os.path.exists(local_path) and duration > 0:
             is_image = local_path.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
-            print(f"Overlaying Upper Photo Card '{cue.get('search_keyword')}' at {start:.2f}s - {(start + duration):.2f}s...")
-            
-            if is_image:
-                card_clip = make_animated_card_clip(local_path, duration, combined.w, combined.h, card_y_pct=card_y_pct)
-                card_clip = card_clip.set_start(start)
-                overlays.append(card_clip)
-            else:
-                asset_clip = VideoFileClip(local_path).without_audio()
-                if asset_clip.duration is not None and asset_clip.duration < duration:
-                    asset_clip = asset_clip.loop(duration=duration)
+            cue_mode = cue.get("display_mode") or visual_display_mode
+            if cue_mode in ["fullscreen", "Full-Screen Cutaway (Recommended)", "cutaway"]:
+                print(f"Overlaying Full-Screen Motion B-Roll '{cue.get('search_keyword')}' at {start:.2f}s - {(start + duration):.2f}s...")
+                fs_clip = make_fullscreen_broll_clip(local_path, duration, combined.w, combined.h)
+                fs_clip = fs_clip.set_start(start)
+                overlays.append(fs_clip)
+            else: # "card" / "Upper Floating Card"
+                print(f"Overlaying Upper Photo Card '{cue.get('search_keyword')}' at {start:.2f}s - {(start + duration):.2f}s...")
+                if is_image:
+                    card_clip = make_animated_card_clip(local_path, duration, combined.w, combined.h, card_y_pct=card_y_pct)
+                    card_clip = card_clip.set_start(start)
+                    overlays.append(card_clip)
                 else:
-                    asset_clip = asset_clip.subclip(0, duration)
-                asset_clip = asset_clip.resize(height=combined.h)
-                if asset_clip.w < combined.w:
-                    asset_clip = asset_clip.resize(width=combined.w)
-                asset_clip = crop(asset_clip, x_center=asset_clip.w / 2, y_center=asset_clip.h / 2,
-                                  width=combined.w, height=combined.h)
-                asset_clip = asset_clip.set_position("center").set_start(start)
-                overlays.append(asset_clip)
+                    fs_clip = make_fullscreen_broll_clip(local_path, duration, combined.w, combined.h)
+                    fs_clip = fs_clip.set_start(start)
+                    overlays.append(fs_clip)
 
     final_render = CompositeVideoClip(overlays)
     temp_output = "temp_assembled.mp4"
@@ -699,6 +831,10 @@ def run_pipeline(
     card_y_pct: float = 0.14,
     punch_callouts: list = None,
     font_name: str = "Montserrat Black",
+    visual_display_mode: str = "fullscreen",
+    sub_color: str = "Pure White",
+    sub_highlight_color: str = "Electric Gold",
+    callout_color: str = "Pure White",
     progress_callback = None
 ):
     """End-to-end processing pipeline with progress updates."""
@@ -711,7 +847,7 @@ def run_pipeline(
     notify(5, "Extracting audio track from video...")
     audio_path = extract_audio(raw_video_path, "temp_audio.wav")
     
-    notify(15, "Transcribing and translating audio with Gemini 3.7 Flash...")
+    notify(15, "Transcribing and translating audio with Gemini...")
     transcript_data = transcribe_audio_gemini(audio_path, api_key=gemini_key, vocab_hints=vocab_hints)
     with open("transcript_english.json", "w", encoding="utf-8") as f:
         json.dump(transcript_data, f, indent=2)
@@ -723,13 +859,13 @@ def run_pipeline(
         json.dump(edit_plan, f, indent=2)
 
     # Stage 3: Visual Stock Asset Retrieval (55-75%)
-    notify(60, "Retrieving high-resolution contextual photos from Pexels...")
-    updated_plan = fetch_pexels_photos(edit_plan, pexels_key=pexels_key)
+    notify(60, "Retrieving high-resolution contextual photos/videos from Pexels...")
+    updated_plan = fetch_pexels_assets(edit_plan, pexels_key=pexels_key)
     with open("edit_plan.json", "w", encoding="utf-8") as f:
         json.dump(updated_plan, f, indent=2)
 
     # Stage 4: Subtitles & Video Assembly (75-100%)
-    notify(75, "Generating synchronized ASS subtitles with in-line gold word highlights...")
+    notify(75, f"Generating synchronized {font_name} ASS subtitles & callouts...")
     cues = updated_plan.get("visual_cues") or updated_plan.get("b_roll_cues") or []
     
     # Extract curated punch callouts (strictly filtering out names and speaker intros)
@@ -750,12 +886,15 @@ def run_pipeline(
         sub_font_size=sub_font_size,
         highlight_words=highlight_words,
         margin_v=sub_margin_v,
-        punch_callouts=punch_callouts
+        punch_callouts=punch_callouts,
+        sub_color=sub_color,
+        sub_highlight_color=sub_highlight_color,
+        callout_default_color=callout_color
     )
     # Also write standard srt for fallback
     write_subtitles_srt(transcript_data, "subtitles.srt")
 
-    notify(85, f"Rendering upper visual cards, {font_name} reel typography & subtitles...")
+    notify(85, f"Rendering {visual_display_mode} motion B-roll, {font_name} reel typography & subtitles...")
     final_video = assemble_final_video(
         raw_video_path,
         updated_plan,
@@ -766,9 +905,11 @@ def run_pipeline(
         sub_margin_v=sub_margin_v,
         card_y_pct=card_y_pct,
         punch_callouts=punch_callouts,
-        font_name=font_name
+        font_name=font_name,
+        visual_display_mode=visual_display_mode
     )
 
     notify(100, "Video editing complete!")
     return final_video, updated_plan, transcript_data, punch_callouts
+
 

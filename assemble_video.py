@@ -16,15 +16,19 @@ def assemble_cut(
     output_path="final_edited_video.mp4",
     font_name="Montserrat Black",
     sub_font_size=22,
-    card_y_pct=0.14
+    card_y_pct=0.14,
+    visual_display_mode="fullscreen",
+    sub_color="Pure White",
+    sub_highlight_color="Electric Gold",
+    callout_color="Pure White"
 ):
     """
     Assembles broadcast-ready reel with:
     - Ultra-bold Montserrat Black / League Spartan typography (+1 point larger subtitles)
+    - Full-screen vertical 9:16 motion B-roll cutaways in between talking-head shots (or upper cards)
     - Pure white all-caps text with sharp black outline & zero background box
     - Synchronous center dynamic text cards
     - Lower desk dialogue subtitles with gold keyword highlights
-    - Contextual visual cards in upper third safe zone (moved up 3 points to clear face/hair)
     """
     if not os.path.exists(raw_video_path) or not os.path.exists(plan_path):
         print("Missing raw video or edit_plan.json!")
@@ -46,7 +50,7 @@ def assemble_cut(
     highlight_words = "toxic, double, depression, money, salary, manager"
     punch_callouts = extract_curated_punch_callouts(plan, transcript_data, highlight_words)
 
-    print(f"Generating ASS subtitles using '{font_name}' ({sub_font_size}pt, pure white, sharp black outline, zero box)...")
+    print(f"Generating ASS subtitles using '{font_name}' ({sub_font_size}pt, {sub_color}, highlight={sub_highlight_color})...")
     ass_path = write_subtitles_ass(
         transcript_data,
         ass_path="subtitles.ass",
@@ -56,10 +60,13 @@ def assemble_cut(
         sub_font_size=sub_font_size,
         highlight_words=highlight_words,
         margin_v=55,
-        punch_callouts=punch_callouts
+        punch_callouts=punch_callouts,
+        sub_color=sub_color,
+        sub_highlight_color=sub_highlight_color,
+        callout_default_color=callout_color
     )
 
-    print(f"Assembling video with upper visual cards (y_center={int(card_y_pct*100)}%), {font_name} outlined typography & subtitles...")
+    print(f"Assembling video with {visual_display_mode} motion B-roll, {font_name} outlined typography & subtitles...")
     assemble_final_video(
         raw_video_path=raw_video_path,
         edit_plan=plan,
@@ -70,7 +77,8 @@ def assemble_cut(
         sub_margin_v=55,
         card_y_pct=card_y_pct,
         punch_callouts=punch_callouts,
-        font_name=font_name
+        font_name=font_name,
+        visual_display_mode=visual_display_mode
     )
     print(f"Done! Final edited video saved as {output_path}")
 

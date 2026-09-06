@@ -7,10 +7,12 @@ import pandas as pd
 import streamlit as st
 from pipeline import (
     run_pipeline,
+    assemble_final_video,
     write_subtitles_ass,
     write_subtitles_srt,
     burn_subtitles_ffmpeg,
     extract_curated_punch_callouts,
+    fetch_pexels_assets,
     DEFAULT_GEMINI_KEY,
     DEFAULT_PEXELS_KEY
 )
@@ -107,27 +109,50 @@ with st.sidebar:
         "Pexels API Key",
         value=os.environ.get("PEXELS_API_KEY", DEFAULT_PEXELS_KEY),
         type="password",
-        help="Used to fetch high-resolution stock photography."
+        help="Used to fetch high-resolution stock photography and video clips."
     )
     
     st.markdown("---")
-    st.markdown("#### 🎨 Typography & Reel Styling")
+    st.markdown("#### 🖼️ Visual Presentation Mode")
+    visual_display_choice = st.selectbox(
+        "Visual Cues Display Mode",
+        options=["Full-Screen Cutaway (Recommended)", "Upper Floating Card", "Per-Cue Custom"],
+        index=0,
+        help="Full-Screen Cutaway: 9:16 vertical motion cutaways with Ken Burns zoom / video clips. Upper Floating Card: Sleek cards positioned above the speaker's head."
+    )
+    
+    st.markdown("---")
+    st.markdown("#### 🎨 Typography & Colors")
     font_choice = st.selectbox(
         "Headline & Subtitle Font",
-        options=["Montserrat Black", "League Spartan", "Arial Black"],
+        options=["Montserrat Black", "League Spartan", "Arial Black", "Impact", "Arial Bold"],
         index=0,
-        help="Ultra-bold heavy sans-serif typeface in all-caps white text with thick black outline."
+        help="Ultra-bold heavy sans-serif typeface with thick black outline & zero background container."
     )
-    st.markdown("""
-    <div style="background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px; font-size: 0.82rem; border-left: 3px solid #6366F1; margin-bottom: 12px;">
-        <b>Font Choice:</b> Ultra-bold heavy sans-serif<br>
-        <b>Text Fill:</b> All-Caps Pure White (&H00FFFFFF)<br>
-        <b>Outline / Stroke:</b> Heavy Black (Outline=3.8-4.8)<br>
-        <b>Background Box:</b> Zero Container Box
-    </div>
-    """, unsafe_allow_html=True)
     
-    st.markdown("#### Subtitle & Visual Positioning Options")
+    sub_color_choice = st.selectbox(
+        "Subtitle Dialogue Text Color",
+        options=["Pure White", "Electric Gold", "Neon Cyan", "Soft Yellow"],
+        index=0,
+        help="Base dialogue font color."
+    )
+    
+    sub_highlight_choice = st.selectbox(
+        "Subtitle Keyword Highlight Color",
+        options=["Electric Gold", "Neon Yellow", "Crimson Red", "Cyan"],
+        index=0,
+        help="Color applied to emphasized keywords inside lower dialogue subtitles."
+    )
+    
+    callout_color_choice = st.selectbox(
+        "Center Punch Callout Color Theme",
+        options=["Pure White", "Red + Gold", "Electric Gold", "Crimson Red", "Neon Cyan"],
+        index=0,
+        help="Color theme for dynamic middle-screen punch words (e.g. HYMA PRASAD, TOXIC)."
+    )
+
+    st.markdown("---")
+    st.markdown("#### 📐 Positioning & Sizing")
     sub_font_size_pt = st.slider(
         "Subtitle Font Size (pt)",
         min_value=16,
@@ -145,7 +170,7 @@ with st.sidebar:
         help="55px places subtitles cleanly across the lower desk line below the nameplate."
     )
     card_y_pct = st.slider(
-        "Visual Picture Position (% from top)",
+        "Upper Card Position (% from top)",
         min_value=8,
         max_value=25,
         value=14,
@@ -246,6 +271,10 @@ if raw_video_path is not None:
                             sub_font_size=sub_font_size_pt,
                             card_y_pct=card_y_pct / 100.0,
                             font_name=font_choice,
+                            visual_display_mode="fullscreen" if "Full-Screen" in visual_display_choice else "card",
+                            sub_color=sub_color_choice,
+                            sub_highlight_color=sub_highlight_choice,
+                            callout_color=callout_color_choice,
                             progress_callback=update_progress
                         )
                         st.session_state["processed_video"] = final_path
@@ -256,6 +285,10 @@ if raw_video_path is not None:
                         st.session_state["output_path"] = output_video_path
                         st.session_state["highlight_words"] = highlight_words
                         st.session_state["font_choice"] = font_choice
+                        st.session_state["sub_color"] = sub_color_choice
+                        st.session_state["sub_highlight_color"] = sub_highlight_choice
+                        st.session_state["callout_color"] = callout_color_choice
+                        st.session_state["visual_display_choice"] = visual_display_choice
                         st.rerun()
                 except Exception as e:
                     st.error(f"Pipeline Error: {e}")
@@ -284,7 +317,146 @@ if raw_video_path is not None:
                 st.session_state.get("highlight_words", "")
             )
 
-        # 1. Dedicated Center Kinetic Callouts Editor
+        # 1. Dedicated Visual Cues & B-Roll Director Table
+        with st.expander("🖼️ Visual Cues & B-Roll Director (Cutaways & Upper Cards)", expanded=True):
+            st.markdown(
+                "Direct the visual cuts and animations! Choose whether each cue appears as a **Full-Screen Motion Cutaway** "
+                "(9:16 cinematic cut with Ken Burns zoom / video) or an **Upper Floating Card** (above speaker's head). "
+                "You can also edit search keywords, switch between **photo** or **video**, and toggle cues on/off."
+            )
+            
+            cues = st.session_state.get("edit_plan", {}).get("visual_cues", [])
+            cue_df_data = []
+            for idx, q in enumerate(cues):
+                cur_mode = q.get("display_mode")
+                if not cur_mode:
+                    cur_mode = "fullscreen" if "Full-Screen" in visual_display_choice else "card"
+                cur_type = q.get("asset_type", "photo")
+                if cur_type == "illustration":
+                    cur_type = "photo"
+                cue_df_data.append({
+                    "Index": idx,
+                    "Start (s)": float(q.get("start", 0)),
+                    "End (s)": float(q.get("end", 0)),
+                    "Search Keyword": str(q.get("search_keyword", "")),
+                    "Asset Type": cur_type if cur_type in ["photo", "video"] else "photo",
+                    "Display Mode": cur_mode if cur_mode in ["fullscreen", "card"] else "fullscreen",
+                    "Show": bool(q.get("enabled", True))
+                })
+                
+            cue_df = pd.DataFrame(cue_df_data)
+            edited_cue_df = st.data_editor(
+                cue_df,
+                column_config={
+                    "Index": st.column_config.NumberColumn(disabled=True, width="small"),
+                    "Start (s)": st.column_config.NumberColumn(min_value=0.0, step=0.1, format="%.2f", width="small"),
+                    "End (s)": st.column_config.NumberColumn(min_value=0.0, step=0.1, format="%.2f", width="small"),
+                    "Search Keyword": st.column_config.TextColumn(width="large", help="Keyword used to search stock assets on Pexels"),
+                    "Asset Type": st.column_config.SelectboxColumn(
+                        options=["photo", "video"],
+                        width="small",
+                        help="photo: HD stock photo with Ken Burns zoom; video: vertical motion video clip"
+                    ),
+                    "Display Mode": st.column_config.SelectboxColumn(
+                        options=["fullscreen", "card"],
+                        width="medium",
+                        help="fullscreen = 9:16 vertical motion cutaway; card = sleek card in upper safe zone"
+                    ),
+                    "Show": st.column_config.CheckboxColumn(width="small", help="Uncheck to hide this cue from video")
+                },
+                use_container_width=True,
+                num_rows="dynamic",
+                key="cue_editor"
+            )
+
+            c_btn1, c_btn2 = st.columns([1, 1])
+            with c_btn1:
+                if st.button("🔄 Download/Update Stock Assets (Fetch Photos/Videos)", key="btn_refetch_assets"):
+                    updated_cues = []
+                    for _, r in edited_cue_df.iterrows():
+                        kw = str(r["Search Keyword"]).strip()
+                        if kw:
+                            updated_cues.append({
+                                "start": float(r["Start (s)"]),
+                                "end": float(r["End (s)"]),
+                                "search_keyword": kw,
+                                "asset_type": str(r["Asset Type"]),
+                                "display_mode": str(r["Display Mode"]),
+                                "enabled": bool(r["Show"]),
+                                "local_file": None
+                            })
+                    st.session_state["edit_plan"]["visual_cues"] = updated_cues
+                    with st.spinner("Fetching stock imagery & videos from Pexels..."):
+                        fetch_pexels_assets(st.session_state["edit_plan"], pexels_key=pexels_key)
+                    st.success("Stock assets downloaded and updated!")
+                    st.rerun()
+
+            with c_btn2:
+                if st.button("🎬 Re-Assemble Full Video with Visual Cues (Takes ~8s)", key="btn_reassemble_cues", type="primary"):
+                    updated_cues = []
+                    for _, r in edited_cue_df.iterrows():
+                        kw = str(r["Search Keyword"]).strip()
+                        if kw:
+                            orig_local = None
+                            try:
+                                idx_val = int(r["Index"])
+                                if idx_val < len(cues):
+                                    orig_local = cues[idx_val].get("local_file")
+                            except Exception:
+                                pass
+                            updated_cues.append({
+                                "start": float(r["Start (s)"]),
+                                "end": float(r["End (s)"]),
+                                "search_keyword": kw,
+                                "asset_type": str(r["Asset Type"]),
+                                "display_mode": str(r["Display Mode"]),
+                                "enabled": bool(r["Show"]),
+                                "local_file": orig_local
+                            })
+                    st.session_state["edit_plan"]["visual_cues"] = updated_cues
+                    with st.spinner("Fetching any missing stock assets..."):
+                        fetch_pexels_assets(st.session_state["edit_plan"], pexels_key=pexels_key)
+
+                    # Update ASS subtitles first
+                    updated_ass = "subtitles.ass"
+                    write_subtitles_ass(
+                        st.session_state["transcript_data"],
+                        ass_path=updated_ass,
+                        font_name=font_choice,
+                        sub_font_size=sub_font_size_pt,
+                        highlight_words=st.session_state.get("highlight_words", ""),
+                        margin_v=sub_margin_v,
+                        punch_callouts=st.session_state.get("punch_callouts", []),
+                        sub_color=sub_color_choice,
+                        sub_highlight_color=sub_highlight_choice,
+                        callout_default_color=callout_color_choice
+                    )
+                    
+                    target_output = st.session_state.get("output_path", "final_edited_video.mp4")
+                    with st.spinner("Compositing video cutaways and burning subtitles..."):
+                        assemble_final_video(
+                            raw_video_path=raw_video_path,
+                            edit_plan=st.session_state["edit_plan"],
+                            sub_path=updated_ass,
+                            output_path=target_output,
+                            transcript_data=st.session_state.get("transcript_data"),
+                            highlight_words=st.session_state.get("highlight_words", ""),
+                            sub_margin_v=sub_margin_v,
+                            card_y_pct=card_y_pct / 100.0,
+                            punch_callouts=st.session_state.get("punch_callouts", []),
+                            font_name=font_choice,
+                            visual_display_mode="fullscreen" if "Full-Screen" in visual_display_choice else "card"
+                        )
+                    if target_output != "final_edited_video.mp4":
+                        try:
+                            shutil.copy(target_output, "final_edited_video.mp4")
+                        except Exception:
+                            pass
+                    st.session_state["processed_video"] = target_output
+                    st.success("🎉 Video successfully re-assembled with your visual cues!")
+                    st.rerun()
+
+        # 2. Dedicated Center Kinetic Callouts Editor
         with st.expander("🎯 Center Kinetic Callouts (Middle Pop-Out Words)", expanded=True):
             st.markdown(
                 "Customize the high-impact punch words that pop up in the middle of the screen (e.g. *HYMA PRASAD*, *POOR COMMUNICATION*, *FEAR OF ENGLISH*). "
@@ -312,7 +484,7 @@ if raw_video_path is not None:
                     "End (s)": st.column_config.NumberColumn(min_value=0.0, step=0.1, format="%.2f", width="small"),
                     "Callout Text": st.column_config.TextColumn(width="large", help="Word or phrase to appear in the center"),
                     "Color Theme": st.column_config.SelectboxColumn(
-                        options=["white", "gold", "red", "red_gold"],
+                        options=["white", "pure_white", "gold", "electric gold", "red", "crimson red", "red_gold", "cyan", "neon cyan", "yellow"],
                         width="medium",
                         help="white = Pure White All-Caps Outlined (Reel Standard)"
                     ),
@@ -334,7 +506,7 @@ if raw_video_path is not None:
                 with ac_col3:
                     new_text = st.text_input("Callout Text", placeholder="e.g. HYMA PRASAD")
                 with ac_col4:
-                    new_color = st.selectbox("Color", ["white", "gold", "red", "red_gold"])
+                    new_color = st.selectbox("Color", ["white", "gold", "red", "red_gold", "cyan", "yellow"])
                 
                 submitted_new_callout = st.form_submit_button("Add Word to Callouts")
                 if submitted_new_callout and new_text.strip():
@@ -424,15 +596,17 @@ if raw_video_path is not None:
             # Write updated ASS with dynamic styling for both layers
             updated_ass = "subtitles.ass"
             hl_words = st.session_state.get("highlight_words", "")
-            chosen_font = st.session_state.get("font_choice", font_choice)
             write_subtitles_ass(
                 st.session_state["transcript_data"],
                 ass_path=updated_ass,
-                font_name=chosen_font,
+                font_name=font_choice,
                 sub_font_size=sub_font_size_pt,
                 highlight_words=hl_words,
                 margin_v=sub_margin_v,
-                punch_callouts=updated_callouts
+                punch_callouts=updated_callouts,
+                sub_color=sub_color_choice,
+                sub_highlight_color=sub_highlight_choice,
+                callout_default_color=callout_color_choice
             )
             write_subtitles_srt(st.session_state["transcript_data"], "subtitles.srt")
             

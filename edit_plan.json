@@ -3,86 +3,91 @@
   "visual_cues": [
     {
       "start": 0.5,
-      "end": 4.1,
-      "search_keyword": "2d vector illustration of toxic workplace boss and employee conflict",
+      "end": 4.2,
+      "search_keyword": "2d vector illustration of employee mental health consultation icon",
       "asset_type": "illustration",
-      "reason": "Visually introduces the core theme of toxic managers and workplace dynamics",
+      "reason": "Visually introduces the core question regarding psychological support in the workplace",
       "local_file": "assets/b_roll\\asset_0_2d_vector_illustration_of.jpg"
     },
     {
-      "start": 14.8,
-      "end": 18.5,
-      "search_keyword": "2d vector illustration of young professional joining multinational corporate company",
+      "start": 13.0,
+      "end": 16.5,
+      "search_keyword": "2d vector illustration of stressed corporate employee feeling overwhelmed",
       "asset_type": "illustration",
-      "reason": "Represents the young prodigy securing a corporate MNC job",
+      "reason": "Illustrates employee burnout and early signs of workplace stress",
       "local_file": "assets/b_roll\\asset_1_2d_vector_illustration_of.jpg"
     },
     {
-      "start": 33.2,
+      "start": 24.5,
+      "end": 28.0,
+      "search_keyword": "minimalist icon graphic of brain burnout and low energy battery",
+      "asset_type": "illustration",
+      "reason": "Depicts fatigue, lethargy, and decreased productivity at work",
+      "local_file": "assets/b_roll\\asset_2_minimalist_icon_graphic_o.jpg"
+    },
+    {
+      "start": 33.5,
       "end": 37.0,
-      "search_keyword": "2d vector illustration of salary growth chart with upward arrow",
+      "search_keyword": "2d vector illustration of insomnia sleep disorder night and day clock",
       "asset_type": "illustration",
-      "reason": "Illustrates rapid career growth and high salary performance",
-      "local_file": "assets/b_roll\\asset_2_2d_vector_illustration_of.jpg"
+      "reason": "Highlights sleep irregularities such as oversleeping or insomnia",
+      "local_file": "assets/b_roll\\asset_3_2d_vector_illustration_of.jpg"
     },
     {
-      "start": 41.0,
-      "end": 44.8,
-      "search_keyword": "minimalist icon graphic of jealousy and gossip among colleagues",
+      "start": 46.5,
+      "end": 50.0,
+      "search_keyword": "minimalist icon graphic of appetite change unhealthy diet eating disorder",
       "asset_type": "illustration",
-      "reason": "Depicts peer envy and toxic criticism from older colleagues",
-      "local_file": "assets/b_roll\\asset_3_minimalist_icon_graphic_o.jpg"
+      "reason": "Represents physiological symptoms like loss of appetite or emotional overeating",
+      "local_file": "assets/b_roll\\asset_4_minimalist_icon_graphic_o.jpg"
     },
     {
-      "start": 52.5,
-      "end": 56.2,
-      "search_keyword": "2d vector illustration of mental stress depression silhouette head",
+      "start": 54.0,
+      "end": 57.5,
+      "search_keyword": "2d vector illustration of stomach gut pain gastritis medical graphic",
       "asset_type": "illustration",
-      "reason": "Highlights the emotional fallout and severe mental depression",
-      "local_file": "assets/b_roll\\asset_4_2d_vector_illustration_of.jpg"
-    },
-    {
-      "start": 67.5,
-      "end": 71.0,
-      "search_keyword": "2d vector illustration of toxic hostile workplace environment",
-      "asset_type": "illustration",
-      "reason": "Symbolizes the negative impact of an abusive professional ecosystem",
+      "reason": "Visualizes physical manifestations of stress like severe gastritis and indigestion",
       "local_file": "assets/b_roll\\asset_5_2d_vector_illustration_of.jpg"
     },
     {
-      "start": 80.0,
-      "end": 83.8,
-      "search_keyword": "minimalist icon graphic of psychological burnout and shattered career",
+      "start": 75.0,
+      "end": 78.5,
+      "search_keyword": "2d vector illustration of therapy counseling session mental wellness",
       "asset_type": "illustration",
-      "reason": "Emphasizes the devastating long-term impact on mental well-being",
-      "local_file": "assets/b_roll\\asset_6_minimalist_icon_graphic_o.jpg"
+      "reason": "Provides a positive visual solution showing professional counseling and recovery",
+      "local_file": "assets/b_roll\\asset_6_2d_vector_illustration_of.jpg"
     }
   ],
   "punch_ins": [
     {
-      "start": 2.1,
-      "end": 4.12,
-      "reason": "TOXIC MANAGERS & EMPLOYEES"
+      "start": 13.0,
+      "end": 15.0,
+      "reason": "STRESSED AT WORK - Emphasizes the central theme of workplace stress"
     },
     {
-      "start": 38.38,
-      "end": 40.5,
-      "reason": "EARNED 2X MORE"
+      "start": 24.3,
+      "end": 25.9,
+      "reason": "FEELING DULL - High-impact symptom keyword"
     },
     {
-      "start": 41.0,
-      "end": 43.0,
-      "reason": "PEER JEALOUSY"
+      "start": 34.0,
+      "end": 35.8,
+      "reason": "INSOMNIA - Highlights common sleep disruption symptom"
     },
     {
-      "start": 52.88,
-      "end": 55.0,
-      "reason": "SEVERE DEPRESSION"
+      "start": 46.5,
+      "end": 48.2,
+      "reason": "APPETITE LOSS - Key physical symptom callout"
     },
     {
-      "start": 80.26,
-      "end": 82.8,
-      "reason": "DEVASTATING IMPACT"
+      "start": 60.8,
+      "end": 62.6,
+      "reason": "RUINED CONCENTRATION - Emphasizes cognitive impact of stress"
+    },
+    {
+      "start": 75.8,
+      "end": 77.8,
+      "reason": "TIMELY COUNSELING - Actionable solution punchline"
     }
   ]
 }
