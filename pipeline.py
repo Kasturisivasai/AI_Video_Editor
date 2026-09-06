@@ -109,14 +109,14 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
     1. HOOK DETECTION:
        - Identify if there is a compelling, high-energy sentence or curiosity gap within the video that should serve as an upfront teaser hook (3 to 6 seconds max).
        - If the video already starts with a strong, natural opening, set "hook_segment": null.
-    2. VISUAL ASSETS (Pictures & B-Roll Cues):
-       - Identify 4 to 7 key moments where a visual aid enhances comprehension or retention.
-       - DO NOT restrict yourself to literal physical nouns. Include conceptual, metaphorical, or emotional visuals (e.g., "market crash graph", "frustrated developer", "serene morning nature", "cryptocurrency wallet", "celebration confetti").
-       - Always output English keywords for "search_keyword" (optimized for stock photo/video APIs).
-       - Keep each visual appearance between 3.5 and 4.5 seconds. Space them out naturally across the timeline.
-    3. PUNCH-INS (Dynamic Concepts):
-       - Identify 2 to 4 high-emphasis words, surprising statistics, or conceptual punchlines to emphasize (1 to 2 seconds).
-       - CRITICAL RULE FOR PUNCH WORDS: NEVER select speaker names, greetings, or self-introductions (e.g., 'Dr. Hema', 'I am...', 'My name is...', 'Psychologist'). Punch words must ONLY be punchy, thematic high-impact concepts (e.g., 'POOR COMMUNICATION', 'FEAR OF ENGLISH', 'REJECTED', 'JOB INTERVIEW', 'CONFIDENCE BLOCK').
+    2. VISUAL ASSETS (2D Vector Illustrations & Symbolic Icons):
+       - Instead of traditional live-action cinematic stock footage or generic photos, specifically select contextual 2D vector illustrations, minimalist line art, and symbolic icons (e.g., "2d vector illustration of a weighing scale", "medical silhouette graphic", "stress brain icon animation", "symbolic line art of rejection letter", "minimalist icon of broken heart").
+       - Each asset must act as a clean, iconic visual aid tightly synchronized to appear as the speaker introduces each key concept or numbered point.
+       - Always output English keywords for "search_keyword" optimized for vector/illustration searches (e.g. "2d vector illustration of...", "minimalist icon graphic of...").
+       - Keep each visual appearance between 3.0 and 4.2 seconds. Space them out naturally across the timeline.
+    3. DYNAMIC TEXT CARDS & PUNCH-INS:
+       - Identify high-retention listicle points or conceptual punchlines to emphasize (1 to 2 seconds).
+       - CRITICAL RULE: NEVER select speaker names, greetings, or self-introductions (e.g., 'Dr. Hema', 'I am...', 'My name is...', 'Psychologist'). Punch words must ONLY be punchy, thematic high-impact concepts (e.g., 'POOR COMMUNICATION', 'FEAR OF ENGLISH', 'REJECTED', 'JOB INTERVIEW', 'CONFIDENCE BLOCK').
     
     STRICT JSON OUTPUT SCHEMA:
     {
@@ -125,8 +125,8 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
         {
           "start": float,
           "end": float,
-          "search_keyword": "high-relevance English stock photo search term",
-          "asset_type": "photo",
+          "search_keyword": "high-relevance 2d vector illustration or icon search term",
+          "asset_type": "illustration",
           "reason": "Brief contextual rationale"
         }
       ],
@@ -223,12 +223,14 @@ NAME_INTRO_BLOCKLIST = {
     "name", "hello", "welcome", "myself", "i am", "this is", "speaking"
 }
 
-def format_callout_ass_text(text: str, color_mode: str = "red_gold") -> str:
-    """Formats center punch text with ASS inline color tags matching viral podcast reels."""
+def format_callout_ass_text(text: str, color_mode: str = "white") -> str:
+    """Formats center dynamic punch card text with ASS inline color tags (defaults to pure white with heavy stroke)."""
     words = text.strip().upper().split()
     if not words:
         return ""
-    if color_mode == "red_gold":
+    if color_mode in ["white", "pure_white"]:
+        return rf"{{\c&H00FFFFFF&}}{' '.join(words)}"
+    elif color_mode == "red_gold":
         if len(words) >= 2:
             first = rf"{{\c&H002020FF&}}{words[0]}"
             rest = " ".join([rf"{{\c&H0000E6FF&}}{w}" for w in words[1:]])
@@ -239,13 +241,13 @@ def format_callout_ass_text(text: str, color_mode: str = "red_gold") -> str:
         return rf"{{\c&H002020FF&}}{' '.join(words)}"
     elif color_mode == "gold":
         return rf"{{\c&H0000E6FF&}}{' '.join(words)}"
-    else: # white
+    else:
         return rf"{{\c&H00FFFFFF&}}{' '.join(words)}"
 
 def extract_curated_punch_callouts(edit_plan: dict, transcript_data: dict, highlight_words: str = "") -> list:
     """
     Extracts high-impact thematic punch callouts while strictly filtering out names and speaker introductions.
-    Returns a list of dicts: [{'start': float, 'end': float, 'text': str, 'color': 'red_gold', 'enabled': bool}]
+    Returns a list of dicts: [{'start': float, 'end': float, 'text': str, 'color': 'white', 'enabled': bool}]
     """
     callouts = []
     hl_list = [w.strip().lower() for w in highlight_words.split(",") if w.strip()]
@@ -267,7 +269,7 @@ def extract_curated_punch_callouts(edit_plan: dict, transcript_data: dict, highl
                     "start": round(start_t, 2),
                     "end": round(min(start_t + 2.2, end_t), 2),
                     "text": hw.upper(),
-                    "color": "red_gold",
+                    "color": "white",
                     "enabled": True
                 })
                 break
@@ -289,7 +291,7 @@ def extract_curated_punch_callouts(edit_plan: dict, transcript_data: dict, highl
                             "start": round(seg_start, 2),
                             "end": round(min(seg_start + 2.2, seg_end), 2),
                             "text": phrase,
-                            "color": "red_gold",
+                            "color": "white",
                             "enabled": True
                         })
                 break
@@ -301,18 +303,22 @@ def write_subtitles_ass(
     ass_path: str = "subtitles.ass",
     video_w: int = 478,
     video_h: int = 850,
+    font_name: str = "Montserrat Black",
     highlight_words: str = "",
     margin_v: int = 55,
     punch_callouts: list = None,
-    callout_margin_v: int = 330
+    callout_margin_v: int = 340
 ) -> str:
     """
-    Generates an ASS subtitle file with two professional layers:
-    - Layer 0 (ReelSub): Lower desk dialogue subtitles with in-line gold word highlights.
-    - Layer 1 (PunchCallout): High-impact center kinetic typography in distressed Impact font.
+    Generates an ASS subtitle file matching the viral reel format:
+    - Font: Montserrat Black / League Spartan (ultra-bold heavy sans-serif)
+    - All-caps pure white text with thick black outline (Outline=3.8 to 4.8)
+    - Zero background container box (BorderStyle=1)
+    - Layer 0 (ReelSub): Lower desk dialogue subtitles with in-line gold keyword highlights
+    - Layer 1 (PunchCallout): High-impact centered dynamic text cards
     """
-    font_size = max(16, int(video_w * 0.044)) # ~21px
-    callout_font_size = max(24, int(video_w * 0.088)) # ~42px
+    sub_font_size = max(16, int(video_w * 0.044)) # ~21px
+    callout_font_size = max(24, int(video_w * 0.078)) # ~37px
     
     header = f"""[Script Info]
 ScriptType: v4.00+
@@ -321,8 +327,8 @@ PlayResY: {video_h}
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: ReelSub,Arial Black,{font_size},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3.2,1.2,2,20,20,{margin_v},1
-Style: PunchCallout,Impact,{callout_font_size},&H0000E6FF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,4.5,2.5,2,20,20,{callout_margin_v},1
+Style: ReelSub,{font_name},{sub_font_size},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3.8,1.4,2,20,20,{margin_v},1
+Style: PunchCallout,{font_name},{callout_font_size},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,4.8,2.0,2,20,20,{callout_margin_v},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -347,7 +353,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
             events.append(f"Dialogue: 0,{start_str},{end_str},ReelSub,,0,0,0,,{text}")
 
-    # Layer 1: Center Punch Callouts (Pure Kinetic Typography in safe chest area)
+    # Layer 1: Center Dynamic Text Cards (Pure white ultra-bold outlined typography)
     if punch_callouts:
         for callout in punch_callouts:
             if not callout.get("enabled", True):
@@ -357,7 +363,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 continue
             s_str = format_ass_time(float(callout["start"]))
             e_str = format_ass_time(float(callout["end"]))
-            styled_txt = format_callout_ass_text(raw_callout_txt, callout.get("color", "red_gold"))
+            styled_txt = format_callout_ass_text(raw_callout_txt, callout.get("color", "white"))
             events.append(f"Dialogue: 1,{s_str},{e_str},PunchCallout,,0,0,0,,{styled_txt}")
 
     with open(ass_path, "w", encoding="utf-8") as f:
@@ -369,33 +375,34 @@ def burn_subtitles_ffmpeg(
     video_input_path: str,
     sub_path: str,
     video_output_path: str,
-    margin_v: int = 320,
+    margin_v: int = 55,
     video_w: int = 478,
     video_h: int = 850
 ) -> str:
-    """Fast subtitle burning using FFmpeg directly (takes ~1-2 seconds, zero video re-encoding required)."""
+    """Fast subtitle burning using FFmpeg directly with Montserrat Black bundled font (zero container box, sharp outline)."""
     ffmpeg = get_ffmpeg_exe()
     safe_sub = sub_path.replace("\\", "/")
+    fonts_dir = "assets/fonts"
     
     if sub_path.lower().endswith(".ass"):
-        vf_arg = f"subtitles='{safe_sub}'"
+        vf_arg = f"subtitles='{safe_sub}':fontsdir='{fonts_dir}'"
     else:
         font_size = max(16, int(video_w * 0.044))
         style_opts = (
             f"PlayResX={video_w},"
             f"PlayResY={video_h},"
-            "FontName=Arial Black,"
+            "FontName=Montserrat Black,"
             f"FontSize={font_size},"
             "Bold=1,"
             "PrimaryColour=&H00FFFFFF,"
             "OutlineColour=&H00000000,"
             "BorderStyle=1,"
-            "Outline=3,"
-            "Shadow=1.5,"
+            "Outline=3.8,"
+            "Shadow=1.4,"
             "Alignment=2,"
             f"MarginV={margin_v}"
         )
-        vf_arg = f"subtitles='{safe_sub}':force_style='{style_opts}'"
+        vf_arg = f"subtitles='{safe_sub}':fontsdir='{fonts_dir}':force_style='{style_opts}'"
 
     cmd = [
         ffmpeg, "-y", "-i", video_input_path,
@@ -602,7 +609,8 @@ def assemble_final_video(
     transcript_data: dict = None,
     highlight_words: str = "",
     sub_margin_v: int = 55,
-    punch_callouts: list = None
+    punch_callouts: list = None,
+    font_name: str = "Montserrat Black"
 ) -> str:
     """Composites raw video with upper animated photo cards, and burns ASS subtitles + kinetic callouts."""
     main_clip = VideoFileClip(raw_video_path)
@@ -683,6 +691,7 @@ def run_pipeline(
     highlight_words: str = "",
     sub_margin_v: int = 55,
     punch_callouts: list = None,
+    font_name: str = "Montserrat Black",
     progress_callback = None
 ):
     """End-to-end processing pipeline with progress updates."""
@@ -730,6 +739,7 @@ def run_pipeline(
         ass_path="subtitles.ass",
         video_w=vid_w,
         video_h=vid_h,
+        font_name=font_name,
         highlight_words=highlight_words,
         margin_v=sub_margin_v,
         punch_callouts=punch_callouts
@@ -737,7 +747,7 @@ def run_pipeline(
     # Also write standard srt for fallback
     write_subtitles_srt(transcript_data, "subtitles.srt")
 
-    notify(85, "Rendering upper photo cards, kinetic reel typography & subtitles...")
+    notify(85, f"Rendering upper visual cards, {font_name} reel typography & subtitles...")
     final_video = assemble_final_video(
         raw_video_path,
         updated_plan,
@@ -746,7 +756,8 @@ def run_pipeline(
         transcript_data=transcript_data,
         highlight_words=highlight_words,
         sub_margin_v=sub_margin_v,
-        punch_callouts=punch_callouts
+        punch_callouts=punch_callouts,
+        font_name=font_name
     )
 
     notify(100, "Video editing complete!")

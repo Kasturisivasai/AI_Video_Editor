@@ -13,8 +13,17 @@ def assemble_cut(
     raw_video_path="VID-20260904-WA0005.mp4",
     plan_path="edit_plan.json",
     transcript_path="transcript_english.json",
-    output_path="final_edited_video.mp4"
+    output_path="final_edited_video.mp4",
+    font_name="Montserrat Black"
 ):
+    """
+    Assembles broadcast-ready reel with:
+    - Ultra-bold Montserrat Black / League Spartan typography
+    - Pure white all-caps text with sharp black outline & zero background box
+    - Synchronous center dynamic text cards
+    - Lower desk dialogue subtitles with gold keyword highlights
+    - Contextual visual cards in upper third safe zone
+    """
     if not os.path.exists(raw_video_path) or not os.path.exists(plan_path):
         print("Missing raw video or edit_plan.json!")
         return
@@ -35,18 +44,19 @@ def assemble_cut(
     highlight_words = "toxic, double, depression, money, salary, manager"
     punch_callouts = extract_curated_punch_callouts(plan, transcript_data, highlight_words)
 
-    print("Generating reel ASS subtitles with in-line gold word highlights & center kinetic callouts...")
+    print(f"Generating ASS subtitles using '{font_name}' (pure white, sharp black outline, zero box)...")
     ass_path = write_subtitles_ass(
         transcript_data,
         ass_path="subtitles.ass",
         video_w=vid_w,
         video_h=vid_h,
+        font_name=font_name,
         highlight_words=highlight_words,
         margin_v=55,
         punch_callouts=punch_callouts
     )
 
-    print("Assembling video with upper photo cards, kinetic reel typography & subtitles...")
+    print(f"Assembling video with upper visual cards, {font_name} outlined typography & subtitles...")
     assemble_final_video(
         raw_video_path=raw_video_path,
         edit_plan=plan,
@@ -55,7 +65,8 @@ def assemble_cut(
         transcript_data=transcript_data,
         highlight_words=highlight_words,
         sub_margin_v=55,
-        punch_callouts=punch_callouts
+        punch_callouts=punch_callouts,
+        font_name=font_name
     )
     print(f"Done! Final edited video saved as {output_path}")
 

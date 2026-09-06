@@ -109,8 +109,21 @@ with st.sidebar:
     )
     
     st.markdown("---")
-    st.markdown("#### Visual Card Settings")
-    st.info("🎨 **Style**: Animated Pop-in + Ken Burns Drift (Podcast/Reel Edition)")
+    st.markdown("#### 🎨 Typography & Reel Styling")
+    font_choice = st.selectbox(
+        "Headline & Subtitle Font",
+        options=["Montserrat Black", "League Spartan", "Arial Black"],
+        index=0,
+        help="Ultra-bold heavy sans-serif typeface in all-caps white text with thick black outline."
+    )
+    st.markdown("""
+    <div style="background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px; font-size: 0.82rem; border-left: 3px solid #6366F1; margin-bottom: 12px;">
+        <b>Font Choice:</b> Ultra-bold heavy sans-serif<br>
+        <b>Text Fill:</b> All-Caps Pure White (&H00FFFFFF)<br>
+        <b>Outline / Stroke:</b> Heavy Black (Outline=3.8-4.8)<br>
+        <b>Background Box:</b> Zero Container Box
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("#### Subtitle Options")
     sub_margin_v = st.slider(
@@ -192,6 +205,7 @@ if uploaded_file is not None:
                             vocab_hints=vocab_hints,
                             highlight_words=highlight_words,
                             sub_margin_v=sub_margin_v,
+                            font_name=font_choice,
                             progress_callback=update_progress
                         )
                         st.session_state["processed_video"] = final_path
@@ -201,6 +215,7 @@ if uploaded_file is not None:
                         st.session_state["punch_callouts"] = punch_callouts
                         st.session_state["output_path"] = output_video_path
                         st.session_state["highlight_words"] = highlight_words
+                        st.session_state["font_choice"] = font_choice
                         st.rerun()
                 except Exception as e:
                     st.error(f"Pipeline Error: {e}")
@@ -244,7 +259,7 @@ if uploaded_file is not None:
                     "Start (s)": float(c.get("start", 0)),
                     "End (s)": float(c.get("end", 0)),
                     "Callout Text": str(c.get("text", "")),
-                    "Color Theme": str(c.get("color", "red_gold")),
+                    "Color Theme": str(c.get("color", "white")),
                     "Show": bool(c.get("enabled", True))
                 })
                 
@@ -257,9 +272,9 @@ if uploaded_file is not None:
                     "End (s)": st.column_config.NumberColumn(min_value=0.0, step=0.1, format="%.2f", width="small"),
                     "Callout Text": st.column_config.TextColumn(width="large", help="Word or phrase to appear in the center"),
                     "Color Theme": st.column_config.SelectboxColumn(
-                        options=["red_gold", "red", "gold", "white"],
+                        options=["white", "gold", "red", "red_gold"],
                         width="medium",
-                        help="red_gold = First word Red, next words Gold"
+                        help="white = Pure White All-Caps Outlined (Reel Standard)"
                     ),
                     "Show": st.column_config.CheckboxColumn(width="small", help="Uncheck to hide this callout from video")
                 },
@@ -279,7 +294,7 @@ if uploaded_file is not None:
                 with ac_col3:
                     new_text = st.text_input("Callout Text", placeholder="e.g. HYMA PRASAD")
                 with ac_col4:
-                    new_color = st.selectbox("Color", ["red_gold", "gold", "red", "white"])
+                    new_color = st.selectbox("Color", ["white", "gold", "red", "red_gold"])
                 
                 submitted_new_callout = st.form_submit_button("Add Word to Callouts")
                 if submitted_new_callout and new_text.strip():
@@ -369,9 +384,11 @@ if uploaded_file is not None:
             # Write updated ASS with dynamic styling for both layers
             updated_ass = "subtitles.ass"
             hl_words = st.session_state.get("highlight_words", "")
+            chosen_font = st.session_state.get("font_choice", font_choice)
             write_subtitles_ass(
                 st.session_state["transcript_data"],
                 ass_path=updated_ass,
+                font_name=chosen_font,
                 highlight_words=hl_words,
                 margin_v=sub_margin_v,
                 punch_callouts=updated_callouts

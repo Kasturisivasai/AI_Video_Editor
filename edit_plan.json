@@ -2,61 +2,61 @@
   "hook_segment": null,
   "visual_cues": [
     {
-      "start": 22.0,
-      "end": 26.0,
-      "search_keyword": "student top grades academic report card",
+      "start": 13.5,
+      "end": 17.5,
+      "search_keyword": "successful young corporate professional modern office",
       "asset_type": "photo",
-      "reason": "Visualizes the student's high academic achievement on paper",
-      "local_file": "assets/b_roll\\asset_0_student_top_grades_academ.jpg"
+      "reason": "Illustrates the talented young professional getting hired at a top company",
+      "local_file": "assets/b_roll\\asset_0_successful_young_corporat.jpg"
     },
     {
-      "start": 31.5,
-      "end": 35.5,
-      "search_keyword": "nervous man sweating during speaking anxiety",
+      "start": 34.0,
+      "end": 38.0,
+      "search_keyword": "career promotion salary hike wealth graph",
       "asset_type": "photo",
-      "reason": "Depicts fear of speaking in English and social anxiety",
-      "local_file": "assets/b_roll\\asset_1_nervous_man_sweating_duri.jpg"
+      "reason": "Visually represents his high performance and rapid income growth",
+      "local_file": "assets/b_roll\\asset_1_career_promotion_salary_h.jpg"
     },
     {
       "start": 44.5,
       "end": 48.5,
-      "search_keyword": "depressed job seeker rejection letter",
+      "search_keyword": "toxic workplace harassment bullying colleagues",
       "asset_type": "photo",
-      "reason": "Highlights the pain of repeatedly failing job interviews",
-      "local_file": "assets/b_roll\\asset_2_depressed_job_seeker_reje.jpg"
+      "reason": "Depicts workplace jealousy and hostile behavior from senior colleagues",
+      "local_file": "assets/b_roll\\asset_2_toxic_workplace_harassmen.jpg"
     },
     {
-      "start": 61.0,
-      "end": 65.0,
-      "search_keyword": "magnifying glass inspecting pressure conceptual",
+      "start": 54.5,
+      "end": 58.5,
+      "search_keyword": "man suffering depression mental stress burnout",
       "asset_type": "photo",
-      "reason": "Metaphor for magnifying interview pressure and scrutiny",
-      "local_file": "assets/b_roll\\asset_3_magnifying_glass_inspecti.jpg"
+      "reason": "Captures the emotional toll and severe psychological distress",
+      "local_file": "assets/b_roll\\asset_3_man_suffering_depression_.jpg"
     },
     {
-      "start": 80.5,
-      "end": 84.5,
-      "search_keyword": "frustrated person tapping head blocked speech",
+      "start": 66.5,
+      "end": 70.5,
+      "search_keyword": "dark oppressive corporate office environment",
       "asset_type": "photo",
-      "reason": "Represents having knowledge internally but being unable to articulate it",
-      "local_file": "assets/b_roll\\asset_4_frustrated_person_tapping.jpg"
+      "reason": "Emphasizes the damaging impact of a toxic work culture",
+      "local_file": "assets/b_roll\\asset_4_dark_oppressive_corporate.jpg"
     }
   ],
   "punch_ins": [
     {
-      "start": 10.44,
-      "end": 12.5,
-      "reason": "Emphasizes the psychologist's professional introduction"
+      "start": 2.4,
+      "end": 4.4,
+      "reason": "TOXIC MANAGERS"
     },
     {
-      "start": 46.56,
-      "end": 48.6,
-      "reason": "Punches in on the repeated failure statement for dramatic impact"
+      "start": 38.0,
+      "end": 40.0,
+      "reason": "EARNED TWICE AS MUCH"
     },
     {
-      "start": 88.7,
-      "end": 90.7,
-      "reason": "Highlights the core tragedy of failing despite having all answers"
+      "start": 55.8,
+      "end": 57.8,
+      "reason": "DEEP DEPRESSION"
     }
   ]
 }
