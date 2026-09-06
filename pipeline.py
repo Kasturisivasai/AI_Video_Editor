@@ -38,6 +38,52 @@ def extract_audio(video_path: str, audio_path: str = "temp_audio.wav") -> str:
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     return audio_path
 
+def get_audio_duration(file_path: str) -> float:
+    """Accurately extracts the total duration of an audio or video file in seconds."""
+    try:
+        import wave
+        with wave.open(file_path, "rb") as w:
+            return float(w.getnframes()) / float(w.getframerate())
+    except Exception:
+        pass
+    try:
+        ffmpeg = get_ffmpeg_exe()
+        cmd = [ffmpeg, "-i", file_path]
+        res = subprocess.run(cmd, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, text=True)
+        for line in res.stderr.splitlines():
+            if "Duration:" in line:
+                part = line.split("Duration:")[1].split(",")[0].strip()
+                h, m, s = part.split(":")
+                return int(h) * 3600 + int(m) * 60 + float(s)
+    except Exception:
+        pass
+    return 105.0
+
+def normalize_timestamp(val: float, max_duration: float = None) -> float:
+    """
+    Normalizes a timestamp value. Detects and repairs mmss notation from LLMs where
+    minutes are formatted as hundreds (e.g. 100.0 -> 60.0s, 115.5 -> 75.5s, 144.0 -> 104.0s).
+    Also clamps to max_duration when provided.
+    """
+    if val is None:
+        return 0.0
+    try:
+        val = float(val)
+    except Exception:
+        return 0.0
+    
+    if val >= 100.0:
+        minutes = int(val // 100)
+        seconds = val - (minutes * 100)
+        if seconds < 60.0:
+            converted = minutes * 60.0 + seconds
+            val = converted
+            
+    if max_duration is not None and val > max_duration:
+        val = min(val, max_duration)
+        
+    return round(val, 2)
+
 GEMINI_MODEL_CANDIDATES = [
     "gemini-3.8-flash",
     "gemini-3.5-flash",
@@ -112,6 +158,7 @@ def robust_json_parse(text: str) -> dict:
 def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, vocab_hints: str = "") -> dict:
     """Uses resilient Gemini models with auto-fallback to transcribe and translate audio into concise English subtitle segments."""
     genai.configure(api_key=api_key, transport="rest")
+    audio_dur = get_audio_duration(audio_path)
     
     with open(audio_path, "rb") as f:
         audio_bytes = f.read()
@@ -131,7 +178,9 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, 
     {hint_text}
     CRITICAL GUIDELINES FOR HIGH-ENGAGEMENT SOCIAL CAPTIONS:
     - Keep each segment short and punchy: strictly 3 to 6 words (under 30 characters).
-    - Accurately timestamp start and end in seconds (e.g., 0.8 to 4.2).
+    - Accurately timestamp start and end in PURE ELAPSED SECONDS ONLY (e.g. 0.8, 15.2, 45.0, 75.4, 98.2).
+    - ABSOLUTELY NEVER USE MM:SS OR MMSS NOTATION (e.g. DO NOT write 100.0 for 1 minute; WRITE 60.0!).
+    - The total audio duration is EXACTLY {audio_dur:.1f} seconds. All timestamps MUST be between 0.0 and {audio_dur:.1f} seconds!
     - Cover the entire speech timeline from beginning to end without gaps or skipping.
     - Output strict standard JSON without trailing commas or comments.
     
@@ -152,7 +201,21 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, 
             data = robust_json_parse(response.text)
             if isinstance(data, list):
                 data = {"segments": data}
-            print(f"Transcription successful using model '{model_name}' ({len(data.get('segments', []))} segments)")
+            
+            # Post-process and sanitize timestamps against audio duration
+            normalized_segs = []
+            for seg in data.get("segments", []):
+                s_start = normalize_timestamp(seg.get("start", 0), max_duration=audio_dur)
+                s_end = normalize_timestamp(seg.get("end", 0), max_duration=audio_dur)
+                if s_end <= s_start:
+                    s_end = round(min(s_start + 2.5, audio_dur), 2)
+                seg["start"] = s_start
+                seg["end"] = s_end
+                normalized_segs.append(seg)
+                
+            data["segments"] = normalized_segs
+            data["duration"] = audio_dur
+            print(f"Transcription successful using model '{model_name}' ({len(data.get('segments', []))} segments, duration: {audio_dur:.1f}s)")
             return data
         except Exception as e:
             last_err = e
@@ -163,10 +226,18 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, 
 def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMINI_KEY) -> dict:
     """AI Director Agent: Analyzes transcript to select 8-9 high-relevance visual cues and 1-2 word power punch callouts with auto-fallback."""
     genai.configure(api_key=api_key, transport="rest")
+    segments = transcript_data.get("segments", [])
+    total_duration = transcript_data.get("duration") or (segments[-1]["end"] if segments else 105.0)
 
-    prompt = """
+    prompt = f"""
     You are an award-winning short-form video director creating viral, broadcast-quality Reels, TikToks, and Shorts.
     Analyze the provided timestamped transcript and return a strict JSON editing blueprint.
+    
+    CRITICAL TIMELINE CONSTRAINTS:
+    - The video timeline is strictly 0.0 to {total_duration:.1f} seconds.
+    - ALL visual cues and punch callouts MUST occur within 0.0 to {total_duration:.1f} seconds!
+    - Timestamps MUST BE PURE ELAPSED SECONDS ONLY (e.g. 15.0, 45.2, 65.0, 85.0).
+    - ABSOLUTELY NEVER USE MM:SS OR MMSS NOTATION (DO NOT write 100.0 for 60s; WRITE 60.0!).
     
     YOUR EDITING STRATEGY:
     1. HOOK DETECTION:
@@ -174,7 +245,7 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
        - If the video already starts with a strong, natural opening, set "hook_segment": null.
     
     2. VISUAL AND B-ROLL OVERLAYS (High-Resolution Realistic Stock Imagery / Video):
-       - GENERATE EXACTLY 8 TO 9 VISUAL CUES distributed evenly across the video timeline (approx every 8 to 12 seconds).
+       - GENERATE EXACTLY 8 TO 9 VISUAL CUES distributed evenly across the video timeline (approx every 8 to 12 seconds, within 0.0 to {total_duration:.1f}s).
        - MANDATORY SENTIMENT & CONTENT ACCURACY:
          * POSITIVE / ASPIRATIONAL TOPICS (e.g. becoming the best employee, career success, workplace communication, dedication, productivity, learning new skills):
            MUST use positive, bright, smiling, and professional human stock photography (e.g., 'smiling professional employee in modern bright office', 'confident businesswoman smiling at work desk', 'business team meeting conference room smiling').
@@ -193,32 +264,32 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
        - Identify 5 to 7 high-impact power words or punch concepts across the timeline (1.5 to 2.2 seconds each).
        - STRICT RULES FOR CALLOUT WORDS:
          * EXACTLY 1 TO 2 WORDS MAXIMUM.
-         * MUST be core thematic concepts, strong emotions, or critical terms (e.g., 'BEST EMPLOYEE', 'COMMUNICATION', 'DEDICATION', 'PATIENCE', 'SUCCESS').
+         * MUST be core thematic concepts, strong emotions, or critical terms (e.g., 'BEST EMPLOYEE', 'COMMUNICATION', 'DEDICATION', 'PATIENCE', 'SUCCESS', 'HIGH POSITION').
          * NEVER select grammatical filler words, auxiliary verbs, prepositions, or pronouns (STRICTLY FORBIDDEN: 'THEY MUST', 'FOR GIVING', 'LEARN YOUR', 'WE ARE', 'CAN BE', 'IN THE', 'SO THAT', 'IT IS', 'BECAUSE OF', 'ABOUT THIS').
          * NEVER select speaker names, greetings, or self-introductions (STRICTLY FORBIDDEN: 'HEMA', 'HYMA PRASAD', 'DOCTOR', 'PSYCHOLOGIST', 'MYSELF').
     
     STRICT JSON OUTPUT SCHEMA:
-    {
-      "hook_segment": {"start": float, "end": float, "reason": "Why this hooks the viewer"} or null,
+    {{
+      "hook_segment": {{"start": float, "end": float, "reason": "Why this hooks the viewer"}} or null,
       "visual_cues": [
-        {
+        {{
           "start": float,
           "end": float,
           "search_keyword": "clean high-resolution stock photo/video search query describing real people (e.g. smiling corporate executive modern office)",
           "asset_type": "photo",
           "display_mode": "fullscreen",
           "reason": "Contextual rationale"
-        }
+        }}
       ],
       "punch_ins": [
-        {
+        {{
           "start": float,
           "end": float,
           "callout_text": "EXACT 1-2 POWER WORDS (e.g. 'BEST EMPLOYEE', 'COMMUNICATION')",
           "reason": "Why this concept hits hard"
-        }
+        }}
       ]
-    }
+    }}
     CRITICAL: Output strict standard JSON without comments, single quotes, or trailing commas.
     Return ONLY valid JSON.
     """
@@ -229,6 +300,34 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
             model = genai.GenerativeModel(model_name, generation_config={"response_mime_type": "application/json"})
             response = model.generate_content([prompt, json.dumps(transcript_data)])
             data = robust_json_parse(response.text)
+            
+            # Sanitize and clamp all cues and punch ins to total_duration
+            clean_cues = []
+            for cue in data.get("visual_cues", []):
+                c_start = normalize_timestamp(cue.get("start", 0), max_duration=total_duration)
+                c_end = normalize_timestamp(cue.get("end", 0), max_duration=total_duration)
+                if c_start < total_duration - 0.5:
+                    c_end = min(c_end, total_duration)
+                    if c_end <= c_start:
+                        c_end = round(min(c_start + 3.5, total_duration), 2)
+                    cue["start"] = c_start
+                    cue["end"] = c_end
+                    clean_cues.append(cue)
+            data["visual_cues"] = clean_cues
+
+            clean_punches = []
+            for pi in data.get("punch_ins", []):
+                p_start = normalize_timestamp(pi.get("start", 0), max_duration=total_duration)
+                p_end = normalize_timestamp(pi.get("end", 0), max_duration=total_duration)
+                if p_start < total_duration - 0.5:
+                    p_end = min(p_end, total_duration)
+                    if p_end <= p_start:
+                        p_end = round(min(p_start + 2.0, total_duration), 2)
+                    pi["start"] = p_start
+                    pi["end"] = p_end
+                    clean_punches.append(pi)
+            data["punch_ins"] = clean_punches
+
             print(f"Editorial plan generated successfully using model '{model_name}' ({len(data.get('visual_cues', []))} visual cues, {len(data.get('punch_ins', []))} punch callouts)")
             return data
         except Exception as e:
@@ -476,11 +575,39 @@ CALLOUT_STOP_WORDS = {
     "stay", "staying", "stayed", "feel", "feeling", "felt", "think", "thinking", "thought"
 }
 
+INAPPROPRIATE_CALLOUT_WORDS = {
+    "CHALLENGE", "SCOLD", "ANNOYED", "TASK", "WORKER", "NOWADAYS", "FEEL", "TREAT",
+    "DOING", "BY DOING", "TAKE UP", "EVERY", "THIS", "EVEN IF", "GET", "THEM", "ANY",
+    "PROVE", "BECAUSE", "COMPLAIN", "DISSATISFIED", "INSTRUCTORS", "DIVINE", "SPEAKING",
+    "PROPER", "WAY", "INNER", "DELAYING", "WITHOUT", "PRACTICE", "BOOSTS", "INTEREST",
+    "REACH", "EASILY", "QUALITIES", "DESIRED", "HIGH", "THEY MUST", "FOR GIVING", "LEARN YOUR"
+}
+
+def find_word_offset_in_segment(seg_text: str, keyword: str, seg_start: float, seg_dur: float) -> float:
+    """Calculates exact timestamp where the keyword is spoken inside the segment so callouts don't pop up early."""
+    words = seg_text.strip().split()
+    kw_lower = keyword.strip().lower()
+    kw_tokens = kw_lower.split()
+    target_token = kw_tokens[0] if kw_tokens else kw_lower
+    
+    for idx, w in enumerate(words):
+        cleaned_w = re.sub(r"[^\w]", "", w.lower())
+        if target_token in cleaned_w or cleaned_w in target_token:
+            ratio = idx / float(max(1, len(words)))
+            return round(seg_start + ratio * seg_dur, 2)
+            
+    return round(seg_start + min(0.6, seg_dur * 0.25), 2)
+
 def clean_callout_phrase(phrase: str) -> str:
     """Cleans a callout candidate, strictly stripping stop words, punctuation, and filler."""
     words = [w for w in re.sub(r"[^\w\s]", "", phrase).split() if len(w) > 1]
     # Filter out stop words and intro blocklist
-    content_words = [w for w in words if w.lower() not in CALLOUT_STOP_WORDS and w.lower() not in NAME_INTRO_BLOCKLIST]
+    content_words = [
+        w for w in words 
+        if w.lower() not in CALLOUT_STOP_WORDS 
+        and w.lower() not in NAME_INTRO_BLOCKLIST
+        and w.upper() not in INAPPROPRIATE_CALLOUT_WORDS
+    ]
     if not content_words:
         return ""
     # Max 2 words
@@ -488,20 +615,20 @@ def clean_callout_phrase(phrase: str) -> str:
 
 def extract_curated_punch_callouts(edit_plan: dict, transcript_data: dict, highlight_words: str = "") -> list:
     """
-    Extracts curated high-impact thematic punch callouts strictly filtering out filler words,
-    stop words ('THEY MUST', 'FOR GIVING', 'LEARN YOUR'), and speaker introductions.
+    Extracts curated high-impact thematic punch callouts strictly synchronized to the exact moment
+    they are spoken, filtering out early pop-ups, filler words, and inappropriate terms.
     Returns a list of dicts: [{'start': float, 'end': float, 'text': str, 'color': 'white', 'enabled': bool}]
     """
     callouts = []
     hl_list = [w.strip().lower() for w in highlight_words.split(",") if w.strip()]
     segments = transcript_data.get("segments", []) if transcript_data else []
 
-    # 1. Custom user highlight keywords
+    # 1. Custom user highlight keywords with word-position sync
     for seg in segments:
         text_raw = seg.get("text", "")
         text_lower = text_raw.lower()
-        start_t = float(seg.get("start", 0))
-        end_t = float(seg.get("end", 0))
+        start_t = normalize_timestamp(seg.get("start", 0))
+        end_t = normalize_timestamp(seg.get("end", 0))
         dur = end_t - start_t
         if dur < 0.4:
             continue
@@ -509,51 +636,48 @@ def extract_curated_punch_callouts(edit_plan: dict, transcript_data: dict, highl
         for hw in hl_list:
             if hw in text_lower:
                 clean_hw = clean_callout_phrase(hw)
-                if clean_hw and len(clean_hw) >= 3:
+                if clean_hw and len(clean_hw) >= 3 and clean_hw not in INAPPROPRIATE_CALLOUT_WORDS:
+                    synced_start = find_word_offset_in_segment(text_raw, clean_hw, start_t, dur)
                     callouts.append({
-                        "start": round(start_t, 2),
-                        "end": round(min(start_t + 2.0, end_t), 2),
+                        "start": synced_start,
+                        "end": round(synced_start + 1.8, 2),
                         "text": clean_hw,
                         "color": "white",
                         "enabled": True
                     })
                     break
 
-    # 2. AI Editorial punch-ins
+    # 2. AI Editorial punch-ins with precision alignment
     punch_ins = edit_plan.get("punch_ins", []) if edit_plan else []
     for pi in punch_ins:
-        pi_start = float(pi.get("start", 0))
+        pi_start = normalize_timestamp(pi.get("start", 0))
         raw_candidate = pi.get("callout_text") or pi.get("keyword") or pi.get("reason", "")
         clean_cand = clean_callout_phrase(raw_candidate)
         
-        # If candidate has valid content words
-        if clean_cand and len(clean_cand) >= 3:
-            if not any(abs(c["start"] - pi_start) < 2.0 for c in callouts):
-                callouts.append({
-                    "start": round(pi_start, 2),
-                    "end": round(pi_start + 2.0, 2),
-                    "text": clean_cand,
-                    "color": "white",
-                    "enabled": True
-                })
-                continue
-                
-        # Fallback: scan nearby segment for strong content nouns/verbs ONLY
+        # Strictly skip empty or inappropriate words
+        if not clean_cand or len(clean_cand) < 3 or clean_cand in INAPPROPRIATE_CALLOUT_WORDS:
+            continue
+        if any(w in INAPPROPRIATE_CALLOUT_WORDS for w in clean_cand.split()):
+            continue
+            
+        # Find exact matching segment to calculate word offset
+        best_start = pi_start
         for seg in segments:
-            seg_start = float(seg.get("start", 0))
-            seg_end = float(seg.get("end", 0))
-            if abs(pi_start - seg_start) < 1.5:
-                clean_seg_phrase = clean_callout_phrase(seg.get("text", ""))
-                if clean_seg_phrase and len(clean_seg_phrase) >= 3:
-                    if not any(abs(c["start"] - seg_start) < 2.0 for c in callouts):
-                        callouts.append({
-                            "start": round(seg_start, 2),
-                            "end": round(min(seg_start + 2.0, seg_end), 2),
-                            "text": clean_seg_phrase,
-                            "color": "white",
-                            "enabled": True
-                        })
+            s_st = normalize_timestamp(seg.get("start", 0))
+            s_en = normalize_timestamp(seg.get("end", 0))
+            seg_txt = seg.get("text", "")
+            if clean_cand.lower() in seg_txt.lower() or abs(pi_start - s_st) < 3.5:
+                best_start = find_word_offset_in_segment(seg_txt, clean_cand, s_st, s_en - s_st)
                 break
+                
+        if not any(abs(c["start"] - best_start) < 2.5 for c in callouts):
+            callouts.append({
+                "start": best_start,
+                "end": round(best_start + 1.8, 2),
+                "text": clean_cand,
+                "color": "white",
+                "enabled": True
+            })
 
     return callouts
 
@@ -648,7 +772,8 @@ def burn_subtitles_ffmpeg(
     video_output_path: str,
     margin_v: int = 55,
     video_w: int = 478,
-    video_h: int = 850
+    video_h: int = 850,
+    total_duration: float = None
 ) -> str:
     """Fast subtitle burning using FFmpeg directly with Montserrat Black bundled font (zero container box, sharp outline)."""
     ffmpeg = get_ffmpeg_exe()
@@ -678,8 +803,10 @@ def burn_subtitles_ffmpeg(
     cmd = [
         ffmpeg, "-y", "-i", video_input_path,
         "-vf", vf_arg,
-        "-c:a", "copy", video_output_path
     ]
+    if total_duration is not None and total_duration > 0:
+        cmd.extend(["-t", f"{total_duration:.3f}"])
+    cmd.extend(["-c:a", "copy", video_output_path])
     subprocess.run(cmd, check=True)
     return video_output_path
 
@@ -953,6 +1080,7 @@ def assemble_final_video(
 ) -> str:
     """Composites raw video with full-screen motion B-roll cuts or upper photo cards, and burns ASS subtitles + kinetic callouts."""
     main_clip = VideoFileClip(raw_video_path)
+    total_duration = main_clip.duration
     combined = main_clip
 
     visual_cues = edit_plan.get("visual_cues") or edit_plan.get("b_roll_cues") or []
@@ -963,9 +1091,16 @@ def assemble_final_video(
         if not cue.get("enabled", True):
             continue
         local_path = cue.get("local_file")
-        start = float(cue.get("start", 0))
-        end = float(cue.get("end", 0))
+        start = normalize_timestamp(cue.get("start", 0), max_duration=total_duration)
+        end = normalize_timestamp(cue.get("end", 0), max_duration=total_duration)
+        
+        # Strictly ignore any cue starting after the video ends or within 0.5s of the end
+        if start >= total_duration - 0.5:
+            continue
+        end = min(end, total_duration)
         duration = end - start
+        if duration < 0.5:
+            continue
 
         if local_path and os.path.exists(local_path) and duration > 0:
             is_image = local_path.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
@@ -986,7 +1121,7 @@ def assemble_final_video(
                     fs_clip = fs_clip.set_start(start)
                     overlays.append(fs_clip)
 
-    final_render = CompositeVideoClip(overlays)
+    final_render = CompositeVideoClip(overlays, size=(combined.w, combined.h), use_bgclip=True).set_duration(total_duration)
     temp_output = "temp_assembled.mp4"
     final_render.write_videofile(
         temp_output,
@@ -1000,14 +1135,15 @@ def assemble_final_video(
     final_render.close()
     main_clip.close()
 
-    # Burn subtitles and kinetic punch callouts with FFmpeg (fast ~1.5s, no video re-encoding)
+    # Burn subtitles and kinetic punch callouts with FFmpeg (fast ~1.5s, no video re-encoding, hard-capped to total_duration)
     burn_subtitles_ffmpeg(
         video_input_path=temp_output,
         sub_path=sub_path,
         video_output_path=output_path,
         margin_v=sub_margin_v,
         video_w=combined.w,
-        video_h=combined.h
+        video_h=combined.h,
+        total_duration=total_duration
     )
 
     # Cleanup temp sound files, keep temp_assembled.mp4 for instant subtitle/callout re-burns

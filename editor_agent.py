@@ -3,7 +3,7 @@ import os
 import google.generativeai as genai
 
 from dotenv import load_dotenv
-from pipeline import robust_json_parse
+from pipeline import robust_json_parse, normalize_timestamp
 
 load_dotenv()
 
@@ -104,6 +104,36 @@ def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):
             )
             response = model.generate_content([prompt, json.dumps(transcript_data)])
             edit_plan = robust_json_parse(response.text)
+
+            # Sanitize and clamp all cues and punch ins
+            segs = transcript_data.get("segments", []) if isinstance(transcript_data, dict) else []
+            total_dur = transcript_data.get("duration") or (segs[-1]["end"] if segs else 105.0)
+            
+            clean_cues = []
+            for cue in edit_plan.get("visual_cues", []):
+                c_start = normalize_timestamp(cue.get("start", 0), max_duration=total_dur)
+                c_end = normalize_timestamp(cue.get("end", 0), max_duration=total_dur)
+                if c_start < total_dur - 0.5:
+                    c_end = min(c_end, total_dur)
+                    if c_end <= c_start:
+                        c_end = round(min(c_start + 3.5, total_dur), 2)
+                    cue["start"] = c_start
+                    cue["end"] = c_end
+                    clean_cues.append(cue)
+            edit_plan["visual_cues"] = clean_cues
+
+            clean_punches = []
+            for pi in edit_plan.get("punch_ins", []):
+                p_start = normalize_timestamp(pi.get("start", 0), max_duration=total_dur)
+                p_end = normalize_timestamp(pi.get("end", 0), max_duration=total_dur)
+                if p_start < total_dur - 0.5:
+                    p_end = min(p_end, total_dur)
+                    if p_end <= p_start:
+                        p_end = round(min(p_start + 2.0, total_dur), 2)
+                    pi["start"] = p_start
+                    pi["end"] = p_end
+                    clean_punches.append(pi)
+            edit_plan["punch_ins"] = clean_punches
 
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(edit_plan, f, indent=2)
