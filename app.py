@@ -322,6 +322,10 @@ if raw_video_path and os.path.exists(raw_video_path):
         start_btn = st.button(btn_label, type="primary" if not has_result else "secondary")
         
         if start_btn:
+            if not gemini_key or not gemini_key.strip():
+                st.error("❌ **Gemini API Key is missing!** Please enter your Gemini API Key in the left sidebar under 'Override API Keys' or configure it in Streamlit Cloud Secrets (`GEMINI_API_KEY`).")
+                st.stop()
+
             progress_bar = st.progress(0)
             status_text = st.empty()
             

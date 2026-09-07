@@ -15,12 +15,12 @@ if not api_key:
 genai.configure(api_key=api_key, transport="rest")
 
 GEMINI_MODEL_CANDIDATES = [
-    "gemini-3.8-flash",
+    "gemini-3.6-flash",
     "gemini-3.5-flash",
     "gemini-flash-latest",
-    "gemini-3.7-flash",
     "gemini-3.5-flash-lite",
-    "gemini-2.5-flash"
+    "gemini-3.8-flash",
+    "gemini-3.7-flash"
 ]
 
 def generate_edit_plan(transcript_path=None, output_path="edit_plan.json"):

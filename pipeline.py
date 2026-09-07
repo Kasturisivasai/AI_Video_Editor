@@ -85,11 +85,12 @@ def normalize_timestamp(val: float, max_duration: float = None) -> float:
     return round(val, 2)
 
 GEMINI_MODEL_CANDIDATES = [
-    "gemini-3.8-flash",
+    "gemini-3.6-flash",
     "gemini-3.5-flash",
     "gemini-flash-latest",
-    "gemini-3.7-flash",
-    "gemini-3.5-flash-lite"
+    "gemini-3.5-flash-lite",
+    "gemini-3.8-flash",
+    "gemini-3.7-flash"
 ]
 
 def robust_json_parse(text: str) -> dict:
@@ -155,10 +156,13 @@ def robust_json_parse(text: str) -> dict:
     except Exception:
         return json.loads(clean)
 
-def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, vocab_hints: str = "") -> dict:
+def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, vocab_hints: str = "", progress_cb = None) -> dict:
     """Uses resilient Gemini models with auto-fallback to transcribe and translate audio into concise English subtitle segments."""
     genai.configure(api_key=api_key, transport="rest")
     audio_dur = get_audio_duration(audio_path)
+    
+    if progress_cb:
+        progress_cb(18, f"Extracted {audio_dur:.1f}s speech track. Reading audio data...")
     
     with open(audio_path, "rb") as f:
         audio_bytes = f.read()
@@ -195,9 +199,14 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, 
     last_err = None
     for model_name in GEMINI_MODEL_CANDIDATES:
         try:
+            if progress_cb:
+                progress_cb(22, f"Gemini ({model_name}) transcribing speech & translating to English...")
             print(f"Attempting transcription with model '{model_name}'...")
             model = genai.GenerativeModel(model_name, generation_config={"response_mime_type": "application/json"})
             response = model.generate_content([{"mime_type": "audio/wav", "data": audio_bytes}, prompt])
+            
+            if progress_cb:
+                progress_cb(28, "Structuring and validating timestamped subtitle segments...")
             data = robust_json_parse(response.text)
             if isinstance(data, list):
                 data = {"segments": data}
@@ -223,7 +232,7 @@ def transcribe_audio_gemini(audio_path: str, api_key: str = DEFAULT_GEMINI_KEY, 
             continue
     raise last_err
 
-def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMINI_KEY) -> dict:
+def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMINI_KEY, progress_cb = None) -> dict:
     """AI Director Agent: Analyzes transcript to select 8-9 high-relevance visual cues and 1-2 word power punch callouts with auto-fallback."""
     genai.configure(api_key=api_key, transport="rest")
     segments = transcript_data.get("segments", [])
@@ -296,9 +305,14 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
     last_err = None
     for model_name in GEMINI_MODEL_CANDIDATES:
         try:
+            if progress_cb:
+                progress_cb(40, f"AI Director ({model_name}) analyzing transcript & designing cuts...")
             print(f"Attempting editorial planning with model '{model_name}'...")
             model = genai.GenerativeModel(model_name, generation_config={"response_mime_type": "application/json"})
             response = model.generate_content([prompt, json.dumps(transcript_data)])
+            
+            if progress_cb:
+                progress_cb(50, "Parsing and validating editorial blueprint...")
             data = robust_json_parse(response.text)
             
             # Sanitize and clamp all cues and punch ins to total_duration
@@ -1187,13 +1201,13 @@ def run_pipeline(
     audio_path = extract_audio(raw_video_path, "temp_audio.wav")
     
     notify(15, "Transcribing and translating audio with Gemini...")
-    transcript_data = transcribe_audio_gemini(audio_path, api_key=gemini_key, vocab_hints=vocab_hints)
+    transcript_data = transcribe_audio_gemini(audio_path, api_key=gemini_key, vocab_hints=vocab_hints, progress_cb=notify)
     with open("transcript_english.json", "w", encoding="utf-8") as f:
         json.dump(transcript_data, f, indent=2)
 
     # Stage 2: AI Editorial Analysis (30-55%)
     notify(35, "AI Director Agent analyzing video narrative...")
-    edit_plan = generate_edit_plan_gemini(transcript_data, api_key=gemini_key)
+    edit_plan = generate_edit_plan_gemini(transcript_data, api_key=gemini_key, progress_cb=notify)
     with open("edit_plan.json", "w", encoding="utf-8") as f:
         json.dump(edit_plan, f, indent=2)
 
