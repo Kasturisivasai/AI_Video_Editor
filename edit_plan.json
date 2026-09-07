@@ -1,124 +1,134 @@
 {
-  "hook_segment": null,
+  "hook_segment": {
+    "start": 0.0,
+    "end": 5.8,
+    "reason": "Hooks the viewer immediately with a highly relatable, high-stakes life conflict: how poor communication ruins lives."
+  },
   "visual_cues": [
     {
       "start": 1.0,
       "end": 4.5,
-      "search_keyword": "confident smiling young professional employee working on laptop in modern bright office",
+      "search_keyword": "frustrated professional looking confused in modern office meeting",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Visually represents a high-performing employee in a modern corporate setting matching the opening statement.",
-      "local_file": "assets/b_roll\\asset_0_confident_smiling_young_p.jpg"
+      "reason": "Directly illustrates the real-world frustration of struggling with poor communication",
+      "local_file": "assets/b_roll\\asset_0_frustrated_professional_l.jpg"
     },
     {
       "start": 12.0,
       "end": 15.5,
-      "search_keyword": "two smiling business professionals discussing project in modern bright office",
+      "search_keyword": "friendly professional psychologist smiling in bright cozy office",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Depicts excellent workplace communication and peer-to-peer connection.",
-      "local_file": "assets/b_roll\\asset_1_two_smiling_business_prof.jpg"
+      "reason": "Establishes a professional, reassuring tone matching the psychologist speaker's introduction",
+      "local_file": "assets/b_roll\\asset_1_friendly_professional_psy.jpg"
     },
     {
-      "start": 28.5,
-      "end": 32.0,
-      "search_keyword": "tired office worker rubbing eyes looking at laptop screen stressed at desk",
+      "start": 22.0,
+      "end": 25.5,
+      "search_keyword": "proud male college student holding perfect exam grade smiling",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Illustrates the stress and dissatisfaction some employees feel in a highly realistic, relatable workplace manner.",
-      "local_file": "assets/b_roll\\asset_2_tired_office_worker_rubbi.jpg"
+      "reason": "Visually showcases the student's high academic achievement and outstanding record",
+      "local_file": "assets/b_roll\\asset_2_proud_male_college_studen.jpg"
     },
     {
-      "start": 41.5,
-      "end": 45.0,
-      "search_keyword": "focused professional woman working with dedication on laptop computer in sunny office",
+      "start": 33.0,
+      "end": 36.5,
+      "search_keyword": "nervous young businessman sweating anxiously at office meeting desk",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Showcases dedication and high productivity in a bright, aspirational workspace.",
-      "local_file": "assets/b_roll\\asset_3_focused_professional_woma.jpg"
+      "reason": "Captures the intense physical and emotional anxiety of language fear",
+      "local_file": "assets/b_roll\\asset_3_nervous_young_businessman.jpg"
     },
     {
-      "start": 54.0,
-      "end": 57.5,
-      "search_keyword": "smiling business woman attending online training class learning new skills on laptop",
+      "start": 44.0,
+      "end": 47.5,
+      "search_keyword": "stressed young candidate waiting anxiously in modern office hallway",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Reinforces the message of proactive learning, upskilling, and professional development.",
-      "local_file": "assets/b_roll\\asset_4_smiling_business_woman_at.jpg"
+      "reason": "Displays the palpable fear and stress felt before facing high-pressure job interviews",
+      "local_file": "assets/b_roll\\asset_4_stressed_young_candidate_.jpg"
     },
     {
-      "start": 75.0,
-      "end": 78.5,
-      "search_keyword": "relaxed serene corporate professional taking slow deep breath with soft smile at desk",
+      "start": 52.0,
+      "end": 55.5,
+      "search_keyword": "disappointed young professional looking down with coffee at desk",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Highlights calmness, composure, and emotional resilience under pressure.",
-      "local_file": "assets/b_roll\\asset_5_relaxed_serene_corporate_.jpg"
+      "reason": "Accurately represents the disappointment of repeated workplace failures",
+      "local_file": "assets/b_roll\\asset_5_disappointed_young_profes.jpg"
     },
     {
-      "start": 66.5,
-      "end": 70.0,
-      "search_keyword": "peaceful business person smiling while looking at tablet computer in modern workspace",
+      "start": 65.0,
+      "end": 68.5,
+      "search_keyword": "anxious corporate job candidate looking at large boardroom office doors",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Shows a calm learning focus, visually supporting the idea of patient skill absorption.",
-      "local_file": "assets/b_roll\\asset_6_peaceful_business_person_.jpg"
+      "reason": "Represents the psychological magnification of facing interviews as giant obstacles",
+      "local_file": "assets/b_roll\\asset_6_anxious_corporate_job_can.jpg"
     },
     {
-      "start": 83.0,
-      "end": 86.5,
-      "search_keyword": "happy corporate worker smiling cheerfully working at desk in bright office",
+      "start": 79.0,
+      "end": 82.5,
+      "search_keyword": "thoughtful professional looking frustrated while working on laptop desk",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Displays high satisfaction and love for one's job in an encouraging workplace environment.",
-      "local_file": "assets/b_roll\\asset_7_happy_corporate_worker_sm.jpg"
+      "reason": "Visually displays the frustration of having knowledge but failing to translate it effectively",
+      "local_file": "assets/b_roll\\asset_7_thoughtful_professional_l.jpg"
     },
     {
-      "start": 98.0,
-      "end": 101.5,
-      "search_keyword": "successful confident executive standing in modern conference room smiling looking forward",
+      "start": 86.8,
+      "end": 90.0,
+      "search_keyword": "confident young man smiling practicing speech in front of mirror",
       "asset_type": "photo",
       "display_mode": "fullscreen",
-      "reason": "Visualizes reaching a desired high position, serving as an aspirational climax to the video.",
-      "local_file": "assets/b_roll\\asset_8_successful_confident_exec.jpg"
+      "reason": "Positive, actionable visual showcasing practice and self-improvement to wrap up the video",
+      "local_file": "assets/b_roll\\asset_8_confident_young_man_smili.jpg"
     }
   ],
   "punch_ins": [
     {
-      "start": 2.0,
-      "end": 3.8,
-      "callout_text": "BEST EMPLOYEE",
-      "reason": "Establishes the core theme of the video immediately."
+      "start": 1.0,
+      "end": 2.8,
+      "callout_text": "POOR COMMUNICATION",
+      "reason": "Highlights the central problem statement right at the hook."
     },
     {
-      "start": 11.5,
-      "end": 13.3,
-      "callout_text": "COMMUNICATION",
-      "reason": "Emphasizes the first major skill quality discussed."
+      "start": 23.0,
+      "end": 24.8,
+      "callout_text": "PERFECT",
+      "reason": "Contrasts his stellar credentials with his communicative failures."
     },
     {
-      "start": 20.0,
-      "end": 21.8,
-      "callout_text": "GRATITUDE",
-      "reason": "Highlights the crucial emotional foundation for professional happiness."
+      "start": 35.0,
+      "end": 36.8,
+      "callout_text": "FEARED ENGLISH",
+      "reason": "Targets the exact source of his anxiety."
     },
     {
-      "start": 41.5,
-      "end": 43.3,
-      "callout_text": "DEDICATION",
-      "reason": "Punches the concept of focused work ethic."
+      "start": 51.0,
+      "end": 52.8,
+      "callout_text": "FAILED REPEATEDLY",
+      "reason": "Creates emotional weight highlighting the consequence of unresolved fear."
     },
     {
-      "start": 57.0,
-      "end": 58.8,
-      "callout_text": "PATIENCE",
-      "reason": "Underlines the value of emotional self-regulation during training."
+      "start": 67.0,
+      "end": 68.8,
+      "callout_text": "SCARED",
+      "reason": "Calls out the core emotional block holding the subject back."
     },
     {
-      "start": 89.5,
-      "end": 91.3,
-      "callout_text": "CHALLENGE",
-      "reason": "Encourages a proactive, fearless attitude towards daily tasks."
+      "start": 80.0,
+      "end": 81.8,
+      "callout_text": "KNOWLEDGE",
+      "reason": "Focuses on the inner potential that is trapped behind the communication barrier."
+    },
+    {
+      "start": 87.5,
+      "end": 89.3,
+      "callout_text": "PRACTICE",
+      "reason": "Leaves the audience with an inspiring, action-oriented takeaway word."
     }
   ]
 }
