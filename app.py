@@ -178,6 +178,15 @@ with st.sidebar:
         help="14% moves pictures up by 3 points (clearing the subject's face and hair completely)."
     )
 
+# Sidebar Session Controls
+with st.sidebar:
+    st.markdown("---")
+    st.markdown("#### 🔄 Session Controls")
+    if st.button("🗑️ Reset & Start Fresh", help="Clears cached session data so you can start over with any video."):
+        for k in list(st.session_state.keys()):
+            del st.session_state[k]
+        st.rerun()
+
 # Main Hero Header
 st.markdown('<div class="badge">AI-POWERED VIDEO POST-PRODUCTION</div>', unsafe_allow_html=True)
 st.markdown('<div class="hero-title">AutoReel Studio</div>', unsafe_allow_html=True)
@@ -186,124 +195,149 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Upload Section
-uploaded_file = st.file_uploader(
-    "Drop your raw MP4 video here",
-    type=["mp4", "mov", "m4v"],
-    help="Upload vertical (9:16) or standard talking-head video."
+# Video Source Selection
+st.markdown("### 1. Select Input Video")
+input_mode = st.radio(
+    "Choose Video Source:",
+    options=["📤 Upload New Video", "📁 Select from Workspace Videos"],
+    horizontal=True,
+    label_visibility="collapsed"
 )
 
 raw_video_path = None
-output_video_path = None
+output_video_path = "final_edited_video.mp4"
 active_file_name = None
 
-if uploaded_file is not None:
-    temp_dir = tempfile.mkdtemp()
-    raw_video_path = os.path.join(temp_dir, "raw_input.mp4")
-    output_video_path = os.path.join(temp_dir, "final_edited_video.mp4")
-    with open(raw_video_path, "wb") as f:
-        f.write(uploaded_file.read())
-    active_file_name = uploaded_file.name
-elif os.path.exists("VID-20260904-WA0005.mp4"):
-    st.info("💡 **Active Workspace Video Loaded**: `VID-20260904-WA0005.mp4`")
-    raw_video_path = "VID-20260904-WA0005.mp4"
-    output_video_path = "final_edited_video.mp4"
-    active_file_name = "VID-20260904-WA0005.mp4"
-    if "processed_video" not in st.session_state and os.path.exists("final_edited_video.mp4"):
-        st.session_state["processed_video"] = "final_edited_video.mp4"
-        st.session_state["current_file"] = active_file_name
-        st.session_state["output_path"] = "final_edited_video.mp4"
-        if os.path.exists("transcript_english.json"):
-            with open("transcript_english.json", "r", encoding="utf-8") as f:
-                st.session_state["transcript_data"] = json.load(f)
-        if os.path.exists("edit_plan.json"):
-            with open("edit_plan.json", "r", encoding="utf-8") as f:
-                st.session_state["edit_plan"] = json.load(f)
+if input_mode == "📤 Upload New Video":
+    uploaded_file = st.file_uploader(
+        "Drop your raw MP4/MOV video here (Supports up to 2 GB)",
+        type=["mp4", "mov", "m4v"],
+        help="Upload vertical (9:16) or standard talking-head video."
+    )
+    if uploaded_file is not None:
+        os.makedirs("uploads", exist_ok=True)
+        safe_name = re.sub(r'[^a-zA-Z0-9_.-]', '_', uploaded_file.name)
+        raw_video_path = os.path.join("uploads", safe_name)
+        
+        # Read bytes reliably using getvalue() so it never exhausts stream
+        file_bytes = uploaded_file.getvalue()
+        if not os.path.exists(raw_video_path) or os.path.getsize(raw_video_path) != len(file_bytes):
+            with open(raw_video_path, "wb") as f:
+                f.write(file_bytes)
+                
+        active_file_name = uploaded_file.name
+else:
+    # Workspace videos
+    all_files = [f for f in os.listdir(".") if f.lower().endswith((".mp4", ".mov")) and not f.startswith("temp_")]
+    priority = ["VID-20260904-WA0005.mp4", "test_9_6_26_6_24_d7dfe13e59bed14e5242162f2689b35e.mp4"]
+    sorted_files = [p for p in priority if p in all_files] + [f for f in all_files if f not in priority]
+    
+    if sorted_files:
+        chosen_video = st.selectbox(
+            "Select Workspace Video to Edit:",
+            sorted_files,
+            index=0,
+            help="Select any MP4 file from the project directory."
+        )
+        raw_video_path = chosen_video
+        active_file_name = chosen_video
+        st.info(f"💡 Selected Workspace Video: `{chosen_video}`")
+    else:
+        st.warning("No video files found in the workspace directory. Please switch to 'Upload New Video'.")
 
-if raw_video_path is not None:
+if raw_video_path and os.path.exists(raw_video_path):
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("### 📹 Raw Video")
+        st.markdown(f"### 📹 Source Video (`{active_file_name}`)")
         st.video(raw_video_path)
 
     with col2:
         st.markdown("### 🎬 Enhanced Output")
         
-        # Check if already processed in this session
-        if "processed_video" not in st.session_state or st.session_state.get("current_file") != active_file_name:
-            st.info("Set any specific proper nouns or highlight pop-out words below, then click to generate.")
-            
-            h_col1, h_col2 = st.columns(2)
-            with h_col1:
-                vocab_hints = st.text_input(
-                    "📝 Name / Vocabulary Hints (Optional)",
-                    placeholder="e.g. Dr. Hymavathi, Hyma Prasad, KIMS Hospitals",
-                    help="Enter comma-separated proper nouns to ensure exact spelling in subtitles."
-                )
-            with h_col2:
-                highlight_words = st.text_input(
-                    "🔥 Highlight Pop-Out Words (Optional)",
-                    placeholder="e.g. toxic, double, depression, money, salary",
-                    help="Words that will pop up as dynamic animated graphics above the subtitles when spoken."
-                )
-            
-            start_btn = st.button("✨ Auto-Edit Video with AI")
-            
-            if start_btn:
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                def update_progress(pct, msg):
-                    progress_bar.progress(pct)
-                    status_text.markdown(f"**[{pct}%]** {msg}")
-                
-                try:
-                    with st.spinner("AI Agents at work..."):
-                        final_path, plan, transcript_data, punch_callouts = run_pipeline(
-                            raw_video_path=raw_video_path,
-                            output_path=output_video_path,
-                            gemini_key=gemini_key,
-                            pexels_key=pexels_key,
-                            vocab_hints=vocab_hints,
-                            highlight_words=highlight_words,
-                            sub_margin_v=sub_margin_v,
-                            sub_font_size=sub_font_size_pt,
-                            card_y_pct=card_y_pct / 100.0,
-                            font_name=font_choice,
-                            visual_display_mode="fullscreen" if "Full-Screen" in visual_display_choice else "card",
-                            sub_color=sub_color_choice,
-                            sub_highlight_color=sub_highlight_choice,
-                            callout_color=callout_color_choice,
-                            progress_callback=update_progress
-                        )
-                        st.session_state["processed_video"] = final_path
-                        st.session_state["current_file"] = active_file_name
-                        st.session_state["edit_plan"] = plan
-                        st.session_state["transcript_data"] = transcript_data
-                        st.session_state["punch_callouts"] = punch_callouts
-                        st.session_state["output_path"] = output_video_path
-                        st.session_state["highlight_words"] = highlight_words
-                        st.session_state["font_choice"] = font_choice
-                        st.session_state["sub_color"] = sub_color_choice
-                        st.session_state["sub_highlight_color"] = sub_highlight_choice
-                        st.session_state["callout_color"] = callout_color_choice
-                        st.session_state["visual_display_choice"] = visual_display_choice
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"Pipeline Error: {e}")
-        else:
+        has_result = (
+            "processed_video" in st.session_state 
+            and st.session_state.get("current_file") == active_file_name
+            and os.path.exists(st.session_state["processed_video"])
+        )
+        
+        if has_result:
             final_path = st.session_state["processed_video"]
-            if os.path.exists(final_path):
-                st.video(final_path)
-                with open(final_path, "rb") as f:
-                    st.download_button(
-                        label="⬇️ Download Edited MP4",
-                        data=f.read(),
-                        file_name="final_edited_video.mp4",
-                        mime="video/mp4"
+            st.video(final_path)
+            with open(final_path, "rb") as f:
+                st.download_button(
+                    label="⬇️ Download Edited MP4",
+                    data=f.read(),
+                    file_name="final_edited_video.mp4",
+                    mime="video/mp4"
+                )
+            st.success("🎉 Video rendered with animated photo cards and desk-aligned subtitles!")
+
+        st.markdown("#### 🚀 AI Video Production")
+        st.caption("Set any specific proper nouns or highlight pop-out words below, then launch the AI editor.")
+        
+        h_col1, h_col2 = st.columns(2)
+        with h_col1:
+            vocab_hints = st.text_input(
+                "📝 Name / Vocabulary Hints (Optional)",
+                value=st.session_state.get("vocab_hints", ""),
+                placeholder="e.g. Dr. Hymavathi, Hyma Prasad, KIMS Hospitals",
+                help="Enter comma-separated proper nouns to ensure exact spelling in subtitles."
+            )
+        with h_col2:
+            highlight_words = st.text_input(
+                "🔥 Highlight Pop-Out Words (Optional)",
+                value=st.session_state.get("highlight_words", ""),
+                placeholder="e.g. toxic, double, depression, money, salary",
+                help="Words that will pop up as dynamic animated graphics above the subtitles when spoken."
+            )
+        
+        btn_label = "🔄 Re-Run Full AI Auto-Edit" if has_result else "✨ Auto-Edit Video with AI"
+        start_btn = st.button(btn_label, type="primary" if not has_result else "secondary")
+        
+        if start_btn:
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            def update_progress(pct, msg):
+                progress_bar.progress(pct)
+                status_text.markdown(f"**[{pct}%]** {msg}")
+            
+            try:
+                with st.spinner("AI Agents at work..."):
+                    final_path, plan, transcript_data, punch_callouts = run_pipeline(
+                        raw_video_path=raw_video_path,
+                        output_path=output_video_path,
+                        gemini_key=gemini_key,
+                        pexels_key=pexels_key,
+                        vocab_hints=vocab_hints,
+                        highlight_words=highlight_words,
+                        sub_margin_v=sub_margin_v,
+                        sub_font_size=sub_font_size_pt,
+                        card_y_pct=card_y_pct / 100.0,
+                        font_name=font_choice,
+                        visual_display_mode="fullscreen" if "Full-Screen" in visual_display_choice else "card",
+                        sub_color=sub_color_choice,
+                        sub_highlight_color=sub_highlight_choice,
+                        callout_color=callout_color_choice,
+                        progress_callback=update_progress
                     )
-                st.success("🎉 Video rendered with animated photo cards and desk-aligned subtitles!")
+                    st.session_state["processed_video"] = final_path
+                    st.session_state["current_file"] = active_file_name
+                    st.session_state["edit_plan"] = plan
+                    st.session_state["transcript_data"] = transcript_data
+                    st.session_state["punch_callouts"] = punch_callouts
+                    st.session_state["output_path"] = output_video_path
+                    st.session_state["vocab_hints"] = vocab_hints
+                    st.session_state["highlight_words"] = highlight_words
+                    st.session_state["font_choice"] = font_choice
+                    st.session_state["sub_color"] = sub_color_choice
+                    st.session_state["sub_highlight_color"] = sub_highlight_choice
+                    st.session_state["callout_color"] = callout_color_choice
+                    st.session_state["visual_display_choice"] = visual_display_choice
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Pipeline Error: {e}")
 
     # Video Typography & Callout Review & Live Editors
     if "transcript_data" in st.session_state and st.session_state.get("processed_video"):
