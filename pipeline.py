@@ -239,44 +239,54 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
     total_duration = transcript_data.get("duration") or (segments[-1]["end"] if segments else 105.0)
 
     prompt = f"""
-    You are an award-winning short-form video director creating viral, broadcast-quality Reels, TikToks, and Shorts.
-    Analyze the provided timestamped transcript and return a strict JSON editing blueprint.
-    
+    You are an elite, award-winning short-form video director creating viral, broadcast-quality Reels, TikToks, and YouTube Shorts (in the style of high-end documentary creators like Ali Abdaal, Vox, and Alex Hormozi).
+    Analyze the provided timestamped transcript and create a strict JSON editing blueprint that is hyper-relatable, engaging, and cinematic.
+
     CRITICAL TIMELINE CONSTRAINTS:
     - The video timeline is strictly 0.0 to {total_duration:.1f} seconds.
     - ALL visual cues and punch callouts MUST occur within 0.0 to {total_duration:.1f} seconds!
     - Timestamps MUST BE PURE ELAPSED SECONDS ONLY (e.g. 15.0, 45.2, 65.0, 85.0).
     - ABSOLUTELY NEVER USE MM:SS OR MMSS NOTATION (DO NOT write 100.0 for 60s; WRITE 60.0!).
-    
+
     YOUR EDITING STRATEGY:
     1. HOOK DETECTION:
        - Identify if there is a compelling, high-energy sentence or curiosity gap within the video that should serve as an upfront teaser hook (3 to 6 seconds max).
        - If the video already starts with a strong, natural opening, set "hook_segment": null.
-    
-    2. VISUAL AND B-ROLL OVERLAYS (High-Resolution Realistic Stock Imagery / Video):
-       - GENERATE EXACTLY 8 TO 9 VISUAL CUES distributed evenly across the video timeline (approx every 8 to 12 seconds, within 0.0 to {total_duration:.1f}s).
-       - MANDATORY SENTIMENT & CONTENT ACCURACY:
-         * POSITIVE / ASPIRATIONAL TOPICS (e.g. becoming the best employee, career success, workplace communication, dedication, productivity, learning new skills):
-           MUST use positive, bright, smiling, and professional human stock photography (e.g., 'smiling professional employee in modern bright office', 'confident businesswoman smiling at work desk', 'business team meeting conference room smiling').
-           ABSOLUTELY FORBIDDEN to use gloomy, dark, depressed, or sad imagery for positive moments!
-         * CALM / PATIENCE TOPICS (e.g. 'stay calm around them', 'people have moods', patience, resilience):
-           MUST use serene, calm, relaxed professional photography (e.g., 'peaceful calm professional person smiling deep breath office', 'relaxed serene person smiling modern office desk').
-           ABSOLUTELY FORBIDDEN to use hand signs, gestures, icons, or abstract symbols!
-         * STRESS / BURNOUT TOPICS (e.g. frustration, heavy workload):
-           Realistic professional workplace fatigue only (e.g., 'tired office worker rubbing eyes at laptop desk'). NEVER clinical depression, hospitals, or grotesque photos.
-       - STRICT KEYWORD RULES:
-         * Describe a CONCRETE REAL HUMAN SCENE (e.g., "smiling executive modern office", "business team conference meeting").
-         * DO NOT use abstract words like "symbol", "icon", "vector", "graphic", "illustration", "concept", "sign", "gesture".
-       - Keep each visual appearance between 3.0 and 4.0 seconds.
-    
+
+    2. HYPER-RELATABLE, CINEMATIC B-ROLL OVERLAYS:
+       - GENERATE EXACTLY 7 TO 9 VISUAL CUES distributed evenly across the video timeline (approx every 9 to 12 seconds, within 0.0 to {total_duration:.1f}s).
+       - NARRATIVE MATCHING (STORY-DRIVEN RELEVANCE):
+         * Every visual cue MUST depict the EXACT real-world action, emotion, or situation the speaker is narrating at that second.
+         * If the speaker tells a story about a student studying hard & getting marks: show a dedicated student focused on books and laptop in a library.
+         * If the speaker talks about fear of speaking English or interview anxiety: show a nervous candidate waiting in an office or sitting at an interview desk.
+         * If the speaker talks about repeated interview rejections or struggles: show a thoughtful person looking out of an office window or reflecting over notes.
+         * If the speaker talks about practicing communication: show two professionals in a natural, candid discussion across a desk or over coffee.
+         * If the speaker talks about confidence or success: show a confident handshake or a clear professional presentation.
+
+       - STRICT AESTHETIC RULES — ZERO CHEESY STOCK PHOTOS:
+         * ABSOLUTELY FORBIDDEN to use generic stock models grinning or smiling directly into the camera lens! (NO 'smiling at camera', NO 'thumbs up', NO fake posed corporate grins).
+         * ALL scenes MUST BE CANDID, ACTION-ORIENTED, and CINEMATIC:
+           - Subjects must be actively doing something (typing, writing notes, conversing naturally, listening attentively, walking with purpose, looking thoughtful).
+           - Modern aesthetic: candid documentary angle, natural workplace or study lighting, shallow depth of field.
+         * NO abstract vectors, clipart, 3D icons, or hand signs (NEVER use 'symbol', 'icon', 'vector', 'illustration', 'gesture').
+
+       - DYNAMIC ASSET TYPE:
+         * Mix 'video' and 'photo'.
+         * Use 'video' for human actions, conversations, studying, and movement (vertical video clips feel 10x more dynamic).
+         * Use 'photo' for thoughtful still moments.
+
+       - SEARCH KEYWORD FORMAT:
+         * Keep search_keyword to 3 to 5 concise, punchy photographic words (e.g. 'candid job interview desk', 'focused student library laptop', 'thoughtful professional office window', 'two colleagues talking desk', 'confident handshake office').
+       - Keep each visual appearance between 3.0 and 4.5 seconds.
+
     3. DYNAMIC CENTER PUNCH CALLOUTS (High-Impact Power Words):
-       - Identify 5 to 7 high-impact power words or punch concepts across the timeline (1.5 to 2.2 seconds each).
+       - Identify 5 to 7 high-impact power concepts across the timeline (1.5 to 2.2 seconds each).
        - STRICT RULES FOR CALLOUT WORDS:
          * EXACTLY 1 TO 2 WORDS MAXIMUM.
-         * MUST be core thematic concepts, strong emotions, or critical terms (e.g., 'BEST EMPLOYEE', 'COMMUNICATION', 'DEDICATION', 'PATIENCE', 'SUCCESS', 'HIGH POSITION').
-         * NEVER select grammatical filler words, auxiliary verbs, prepositions, or pronouns (STRICTLY FORBIDDEN: 'THEY MUST', 'FOR GIVING', 'LEARN YOUR', 'WE ARE', 'CAN BE', 'IN THE', 'SO THAT', 'IT IS', 'BECAUSE OF', 'ABOUT THIS').
-         * NEVER select speaker names, greetings, or self-introductions (STRICTLY FORBIDDEN: 'HEMA', 'HYMA PRASAD', 'DOCTOR', 'PSYCHOLOGIST', 'MYSELF').
-    
+         * MUST be core thematic concepts or strong emotional triggers (e.g., 'POOR COMMUNICATION', 'GREAT MARKS', 'ENGLISH FEAR', 'FAILED REPEATEDLY', 'HAVE KNOWLEDGE', 'HOW TO PRACTICE').
+         * NEVER select grammatical filler words (FORBIDDEN: 'THEY MUST', 'FOR GIVING', 'LEARN YOUR', 'WE ARE', 'CAN BE', 'IN THE', 'SO THAT', 'IT IS', 'BECAUSE OF', 'ABOUT THIS').
+         * NEVER select speaker names or titles ('HEMA', 'HYMA PRASAD', 'DOCTOR', 'PSYCHOLOGIST', 'MYSELF').
+
     STRICT JSON OUTPUT SCHEMA:
     {{
       "hook_segment": {{"start": float, "end": float, "reason": "Why this hooks the viewer"}} or null,
@@ -284,23 +294,22 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
         {{
           "start": float,
           "end": float,
-          "search_keyword": "clean high-resolution stock photo/video search query describing real people (e.g. smiling corporate executive modern office)",
-          "asset_type": "photo",
+          "search_keyword": "3-5 word candid, action-focused search query (e.g. 'candid job interview office desk')",
+          "asset_type": "video" or "photo",
           "display_mode": "fullscreen",
-          "reason": "Contextual rationale"
+          "reason": "Direct narrative link to the spoken words"
         }}
       ],
       "punch_ins": [
         {{
           "start": float,
           "end": float,
-          "callout_text": "EXACT 1-2 POWER WORDS (e.g. 'BEST EMPLOYEE', 'COMMUNICATION')",
+          "callout_text": "EXACT 1-2 POWER WORDS (e.g. 'ENGLISH FEAR', 'GREAT MARKS')",
           "reason": "Why this concept hits hard"
         }}
       ]
     }}
     CRITICAL: Output strict standard JSON without comments, single quotes, or trailing commas.
-    Return ONLY valid JSON.
     """
     last_err = None
     for model_name in GEMINI_MODEL_CANDIDATES:
@@ -342,11 +351,11 @@ def generate_edit_plan_gemini(transcript_data: dict, api_key: str = DEFAULT_GEMI
                     clean_punches.append(pi)
             data["punch_ins"] = clean_punches
 
-            print(f"Editorial plan generated successfully using model '{model_name}' ({len(data.get('visual_cues', []))} visual cues, {len(data.get('punch_ins', []))} punch callouts)")
+            print(f"Editorial plan successfully generated with model '{model_name}' ({len(clean_cues)} cues, {len(clean_punches)} punch callouts)")
             return data
         except Exception as e:
             last_err = e
-            print(f"Model '{model_name}' planning error: {e}. Falling back to next candidate...")
+            print(f"Model '{model_name}' quota/error: {e}. Falling back to next candidate...")
             continue
     raise last_err
 
@@ -369,20 +378,24 @@ ASS_COLOR_MAP = {
 }
 
 def clean_search_keyword(kw: str) -> str:
-    """Strips out clipart/illustration boilerplate prefixes and abstract keywords to get pristine photographic/video queries."""
+    """Strips out clipart/illustration boilerplate prefixes, abstract keywords, and cheesy stock poses to get pristine candid photographic/video queries."""
     cleaned = re.sub(
         r"^(2d vector illustration of|minimalist icon graphic of|symbolic line art of|vector illustration of|minimalist icon of|illustration of|icon graphic of|icon of|graphic of|a photo of|photo of|picture of)\s+",
         "",
         kw.strip(),
         flags=re.IGNORECASE
     ).strip()
-    # If abstract terms present, convert to concrete human photography terms
+    # Strip cheesy posing / smiling terms that produce unnatural stock photos
+    cleaned = re.sub(r"\b(smiling at camera|smiling into camera|cheesy smile|smiling into lens|smiling)\b", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    
+    # If abstract terms present, convert to concrete candid human b-roll
     if any(term in cleaned.lower() for term in ["calm mind", "stay calm", "patience", "emotional intelligence"]):
-        return "calm peaceful professional smiling deep breath modern office"
+        return "calm peaceful professional deep breath modern office"
     if any(term in cleaned.lower() for term in ["good communication", "clear speech", "communication dialogue"]):
-        return "business team effective communication meeting conference room"
+        return "two professionals candid discussion modern office"
     if any(term in cleaned.lower() for term in ["standout employee", "best employee", "shining star"]):
-        return "successful professional employee smiling in modern corporate office"
+        return "focused dedicated professional working in modern office"
     return cleaned if cleaned else kw.strip()
 
 INAPPROPRIATE_ALT_BLOCKLIST = [
