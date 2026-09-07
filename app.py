@@ -108,21 +108,35 @@ def get_secret(key_name, default=""):
 with st.sidebar:
     st.markdown("### ⚙️ Engine Settings")
     
-    st.markdown("#### API Keys")
-    initial_gemini = get_secret("GEMINI_API_KEY", DEFAULT_GEMINI_KEY)
-    initial_pexels = get_secret("PEXELS_API_KEY", DEFAULT_PEXELS_KEY)
-    gemini_key = st.text_input(
-        "Gemini API Key",
-        value=initial_gemini,
-        type="password",
-        help="Used for transcription, translation, and edit blueprint generation."
-    )
-    pexels_key = st.text_input(
-        "Pexels API Key",
-        value=initial_pexels,
-        type="password",
-        help="Used to fetch high-resolution stock photography and video clips."
-    )
+    configured_gemini = get_secret("GEMINI_API_KEY", DEFAULT_GEMINI_KEY)
+    configured_pexels = get_secret("PEXELS_API_KEY", DEFAULT_PEXELS_KEY)
+
+    # Display secure status badge - NEVER pass secret key strings into frontend HTML value!
+    if configured_gemini and configured_pexels:
+        st.success("🔒 **API Keys**: Configured & Protected")
+    elif configured_gemini:
+        st.info("🔒 Gemini Key Protected | ⚠️ Pexels Key Needed")
+    else:
+        st.warning("⚠️ API Keys Missing. Please configure.")
+
+    with st.expander("🔑 Override API Keys (Optional)", expanded=not (configured_gemini and configured_pexels)):
+        user_gemini_input = st.text_input(
+            "Gemini API Key",
+            value="",
+            type="password",
+            placeholder="Using secure secret (enter new to override)" if configured_gemini else "Paste Gemini API Key",
+            help="Leave blank to use the secure environment/cloud secret key."
+        )
+        user_pexels_input = st.text_input(
+            "Pexels API Key",
+            value="",
+            type="password",
+            placeholder="Using secure secret (enter new to override)" if configured_pexels else "Paste Pexels API Key",
+            help="Leave blank to use the secure environment/cloud secret key."
+        )
+    
+    gemini_key = user_gemini_input.strip() if user_gemini_input.strip() else configured_gemini
+    pexels_key = user_pexels_input.strip() if user_pexels_input.strip() else configured_pexels
     
     st.markdown("---")
     st.markdown("#### 🖼️ Visual Presentation Mode")
