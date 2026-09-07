@@ -94,20 +94,32 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+def get_secret(key_name, default=""):
+    val = os.environ.get(key_name, "")
+    if not val:
+        try:
+            if hasattr(st, "secrets") and key_name in st.secrets:
+                val = str(st.secrets[key_name])
+        except Exception:
+            pass
+    return val or default
+
 # Sidebar for Settings & API Keys
 with st.sidebar:
     st.markdown("### ⚙️ Engine Settings")
     
     st.markdown("#### API Keys")
+    initial_gemini = get_secret("GEMINI_API_KEY", DEFAULT_GEMINI_KEY)
+    initial_pexels = get_secret("PEXELS_API_KEY", DEFAULT_PEXELS_KEY)
     gemini_key = st.text_input(
         "Gemini API Key",
-        value=os.environ.get("GEMINI_API_KEY", DEFAULT_GEMINI_KEY),
+        value=initial_gemini,
         type="password",
         help="Used for transcription, translation, and edit blueprint generation."
     )
     pexels_key = st.text_input(
         "Pexels API Key",
-        value=os.environ.get("PEXELS_API_KEY", DEFAULT_PEXELS_KEY),
+        value=initial_pexels,
         type="password",
         help="Used to fetch high-resolution stock photography and video clips."
     )
